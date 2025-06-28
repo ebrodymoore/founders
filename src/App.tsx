@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
@@ -582,7 +582,7 @@ const GolfTournamentSystem = () => {
               </div>
             </div>
             <h1 className="text-6xl font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-4 animate-in fade-in-0 duration-1000">
-              Golf Tournament Pro
+              The Founders Series
             </h1>
             <div className="flex items-center justify-center gap-2 mb-4">
               <Sparkles className="text-emerald-400 animate-pulse" size={24} />
@@ -590,7 +590,7 @@ const GolfTournamentSystem = () => {
               <Sparkles className="text-emerald-400 animate-pulse" size={24} />
             </div>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in-0 duration-1000 delay-300">
-              Professional tournament management with real-time leaderboards, comprehensive scoring, and advanced analytics
+              A summer long race to the championship and a chance for members to compete, play, hangout, and win.
             </p>
           </div>
 
