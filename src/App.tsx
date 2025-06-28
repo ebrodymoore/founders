@@ -584,11 +584,6 @@ const GolfTournamentSystem = () => {
             <h1 className="text-6xl font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-4 animate-in fade-in-0 duration-1000">
               The Founders Series
             </h1>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Sparkles className="text-emerald-400 animate-pulse" size={24} />
-              <span className="text-lg font-semibold text-emerald-400">Elite Championship Series</span>
-              <Sparkles className="text-emerald-400 animate-pulse" size={24} />
-            </div>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in-0 duration-1000 delay-300">
               A summer long race to the championship and a chance for members to compete, play, hangout, and win.
             </p>
