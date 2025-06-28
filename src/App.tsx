@@ -27,7 +27,6 @@ interface ScheduleEvent {
   date: string;
   name: string;
   type: string;
-  status: string;
   venue?: string;
   subtitle?: string;
 }
@@ -60,36 +59,86 @@ const GolfTournamentSystem = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  // Function to determine event status based on current date
+  const getEventStatus = (dateString: string): string => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+    
+    // Parse different date formats
+    const parseDate = (dateStr: string): { start: Date; end: Date } => {
+      const currentYear = new Date().getFullYear();
+      
+      // Handle range formats like "June 5–15", "July 27–Aug 2"
+      if (dateStr.includes('–')) {
+        const [startStr, endStr] = dateStr.split('–');
+        
+        // Handle cross-month ranges like "July 27–Aug 2"
+        if (endStr.includes(' ')) {
+          const [endMonth, endDay] = endStr.trim().split(' ');
+          const startDate = new Date(`${startStr.trim()} ${currentYear}`);
+          const endDate = new Date(`${endMonth} ${endDay} ${currentYear}`);
+          return { start: startDate, end: endDate };
+        } else {
+          // Same month range like "June 5–15"
+          const startDate = new Date(`${startStr.trim()} ${currentYear}`);
+          const monthMatch = startStr.match(/^([A-Za-z]+)/);
+          const month = monthMatch ? monthMatch[1] : '';
+          const endDate = new Date(`${month} ${endStr.trim()} ${currentYear}`);
+          return { start: startDate, end: endDate };
+        }
+      } else {
+        // Single date like "June 12"
+        const singleDate = new Date(`${dateStr} ${currentYear}`);
+        return { start: singleDate, end: singleDate };
+      }
+    };
+
+    try {
+      const { start, end } = parseDate(dateString);
+      
+      if (today < start) {
+        return 'upcoming';
+      } else if (today >= start && today <= end) {
+        return 'live';
+      } else {
+        return 'completed';
+      }
+    } catch (error) {
+      // Fallback to upcoming if parsing fails
+      return 'upcoming';
+    }
+  };
+
   // Schedule data
   const schedule: Record<string, ScheduleEvent[]> = {
     'MAY': [
-      { date: 'June 5–15', name: 'U.S. Open', type: 'Major', status: 'upcoming' },
-      { date: 'June 12', name: 'Supr Club #2', type: 'SUPR', venue: 'Outdoor', status: 'upcoming' },
-      { date: 'June 22–28', name: 'Indoor Tournament', type: 'Tour Event', status: 'upcoming' },
-      { date: 'June 26', name: 'League Night #2', type: 'League', status: 'upcoming' }
+      { date: 'June 5–15', name: 'U.S. Open', type: 'Major' },
+      { date: 'June 12', name: 'Supr Club #2', type: 'SUPR', venue: 'Outdoor' },
+      { date: 'June 22–28', name: 'Indoor Tournament', type: 'Tour Event' },
+      { date: 'June 26', name: 'League Night #2', type: 'League' }
     ],
     'JUNE': [
-      { date: 'July 10–20', name: 'Open Championship', type: 'Major', status: 'upcoming' },
-      { date: 'July 10', name: 'Supr Club #3', type: 'SUPR', venue: 'Outdoor', status: 'upcoming' },
-      { date: 'July 24', name: 'League Night #3', type: 'League', status: 'upcoming' },
-      { date: 'July 27–Aug 2', name: 'Indoor Tournament', type: 'Tour Event', status: 'upcoming' }
+      { date: 'July 10–20', name: 'Open Championship', type: 'Major' },
+      { date: 'July 10', name: 'Supr Club #3', type: 'SUPR', venue: 'Outdoor' },
+      { date: 'July 24', name: 'League Night #3', type: 'League' },
+      { date: 'July 27–Aug 2', name: 'Indoor Tournament', type: 'Tour Event' }
     ],
     'JULY': [
-      { date: 'Aug 7', name: 'The Players', type: 'Major', status: 'upcoming' },
-      { date: 'Aug 10–16', name: 'Indoor Tournament', type: 'Tour Event', status: 'upcoming' },
-      { date: 'Aug 21', name: 'League Night #4', type: 'League', status: 'upcoming' },
-      { date: 'Aug 24–30', name: 'Indoor Tournament', type: 'Tour Event', status: 'upcoming' }
+      { date: 'Aug 7', name: 'The Players', type: 'Major' },
+      { date: 'Aug 10–16', name: 'Indoor Tournament', type: 'Tour Event' },
+      { date: 'Aug 21', name: 'League Night #4', type: 'League' },
+      { date: 'Aug 24–30', name: 'Indoor Tournament', type: 'Tour Event' }
     ],
     'AUG': [
-      { date: 'Sept 4', name: 'Supr Club #5', type: 'SUPR', venue: 'Outdoor', status: 'upcoming' },
-      { date: 'Sept 7–13', name: 'Founders Cup', type: 'Tour Event', subtitle: 'Ryder Cup Team Event', status: 'upcoming' },
-      { date: 'Sept 18', name: 'League Night #5', type: 'League', status: 'upcoming' },
-      { date: 'Sept 21–27', name: 'Indoor Tournament', type: 'Tour Event', status: 'upcoming' }
+      { date: 'Sept 4', name: 'Supr Club #5', type: 'SUPR', venue: 'Outdoor' },
+      { date: 'Sept 7–13', name: 'Founders Cup', type: 'Tour Event', subtitle: 'Ryder Cup Team Event' },
+      { date: 'Sept 18', name: 'League Night #5', type: 'League' },
+      { date: 'Sept 21–27', name: 'Indoor Tournament', type: 'Tour Event' }
     ],
     'SEPT': [
-      { date: 'Oct 2', name: 'Supr Club #6', type: 'SUPR', venue: 'Outdoor', status: 'upcoming' },
-      { date: 'Oct 7', name: 'League Night #6', type: 'League', status: 'upcoming' },
-      { date: 'Oct 10', name: 'Playoff', type: 'Major', subtitle: 'Top 6 competitors', status: 'upcoming' }
+      { date: 'Oct 2', name: 'Supr Club #6', type: 'SUPR', venue: 'Outdoor' },
+      { date: 'Oct 7', name: 'League Night #6', type: 'League' },
+      { date: 'Oct 10', name: 'Playoff', type: 'Major', subtitle: 'Top 6 competitors' }
     ]
   };
 
@@ -137,7 +186,8 @@ const GolfTournamentSystem = () => {
     };
 
     Object.values(schedule).flat().forEach((event: ScheduleEvent) => {
-      if (event.status === 'upcoming') {
+      const status = getEventStatus(event.date);
+      if (status === 'upcoming') {
         remainingEvents[event.type as keyof typeof remainingEvents]++;
       }
     });
@@ -911,12 +961,12 @@ const GolfTournamentSystem = () => {
                               {event.date}
                             </span>
                             <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              event.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                              event.status === 'live' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                              getEventStatus(event.date) === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                              getEventStatus(event.date) === 'live' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
                               'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             }`}>
-                              {event.status === 'completed' ? 'Completed' :
-                               event.status === 'live' ? 'Live' : 'Upcoming'}
+                              {getEventStatus(event.date) === 'completed' ? 'Finished' :
+                               getEventStatus(event.date) === 'live' ? 'In Progress' : 'Upcoming'}
                             </div>
                           </div>
                         </div>
@@ -966,7 +1016,7 @@ const GolfTournamentSystem = () => {
                           : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
-                      Net Scores
+                      Net
                     </button>
                     <button
                       onClick={() => setLeaderboardType('gross')}
@@ -976,7 +1026,7 @@ const GolfTournamentSystem = () => {
                           : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
-                      Gross Scores
+                      Gross
                     </button>
                   </div>
                   
@@ -1022,10 +1072,7 @@ const GolfTournamentSystem = () => {
                       <th className="text-left p-4 font-semibold text-gray-200">Rank</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Player</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Club</th>
-                      <th className="text-left p-4 font-semibold text-gray-200">Avg {leaderboardType === 'net' ? 'Net' : 'Gross'}</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Total Points</th>
-                      <th className="text-left p-4 font-semibold text-gray-200">Events Counting</th>
-                      <th className="text-left p-4 font-semibold text-gray-200">Total Played</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Best Finish</th>
                     </tr>
                   </thead>
