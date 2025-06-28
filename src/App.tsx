@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, User, Lock, Check, Zap, FileSpreadsheet, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const GolfTournamentSystem = () => {
@@ -100,7 +100,7 @@ const GolfTournamentSystem = () => {
 
     Object.values(schedule).flat().forEach(event => {
       if (event.status === 'upcoming') {
-        remainingEvents[event.type]++;
+        remainingEvents[event.type as keyof typeof remainingEvents]++;
       }
     });
 
@@ -122,7 +122,7 @@ const GolfTournamentSystem = () => {
   };
 
   // Check if player has secured playoff spot
-  const isPlayoffQualified = (player, leaderboard, type) => {
+  const isPlayoffQualified = (player: any, leaderboard: any) => {
     const remaining = calculateRemainingPoints();
     const clubPlayers = leaderboard.filter(p => p.club === player.club);
     const playerRankInClub = clubPlayers.findIndex(p => p.name === player.name) + 1;
@@ -155,13 +155,13 @@ const GolfTournamentSystem = () => {
     setShowUpload(false);
   };
 
-  const parseCSV = (csvText) => {
+  const parseCSV = (csvText: string) => {
     const lines = csvText.trim().split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
     
     return lines.slice(1).map(line => {
       const values = line.split(',').map(v => v.trim());
-      const player = {};
+      const player: { [key: string]: string } = {};
       headers.forEach((header, index) => {
         player[header] = values[index] || '';
       });
@@ -304,9 +304,9 @@ const GolfTournamentSystem = () => {
         if (extension === 'xlsx' || extension === 'xls') {
           players = await parseXLSX(selectedFile);
         } else if (extension === 'csv') {
-          const csvText = await new Promise((resolve, reject) => {
+          const csvText = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
+            reader.onload = (e) => resolve(e.target?.result as string);
             reader.onerror = () => reject(new Error('Failed to read CSV file'));
             reader.readAsText(selectedFile);
           });
@@ -957,7 +957,7 @@ const GolfTournamentSystem = () => {
                             }`}></div>
                             <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
                               {player.name}
-                              {isPlayoffQualified(player, generateLeaderboard(leaderboardType), leaderboardType) && (
+                              {isPlayoffQualified(player, generateLeaderboard(leaderboardType)) && (
                                 <Star className="inline ml-2 text-yellow-400" size={16} title="Qualified for Playoffs" />
                               )}
                             </span>
