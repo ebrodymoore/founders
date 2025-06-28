@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface Player {
@@ -51,6 +51,14 @@ const GolfTournamentSystem = () => {
     uploadMethod: 'csv'
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  // Show notification and auto-hide after 3 seconds
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   // Schedule data
   const schedule: Record<string, ScheduleEvent[]> = {
@@ -175,8 +183,9 @@ const GolfTournamentSystem = () => {
       setIsAdmin(true);
       setShowLogin(false);
       setLoginData({ username: '', password: '' });
+      showNotification('Admin access granted!', 'success');
     } else {
-      alert('Invalid credentials. Use username: admin, password: golf2025');
+      showNotification('Invalid credentials. Use username: admin, password: golf2025', 'error');
     }
   };
 
@@ -321,9 +330,11 @@ const GolfTournamentSystem = () => {
 
   const handleUpload = async () => {
     if (!uploadData.name || !uploadData.date) {
-      alert('Please fill in tournament name and date');
+      showNotification('Please fill in tournament name and date', 'error');
       return;
     }
+
+    setIsLoading(true);
 
     let players: any[] = [];
 
@@ -348,23 +359,27 @@ const GolfTournamentSystem = () => {
           });
           players = parseCSV(csvText);
         } else {
-          alert('Please select a CSV or Excel (.xlsx) file');
+          showNotification('Please select a CSV or Excel (.xlsx) file', 'error');
+          setIsLoading(false);
           return;
         }
       } else if (uploadData.uploadMethod === 'csv' && uploadData.csvData) {
         players = parseCSV(uploadData.csvData);
       } else {
-        alert('Please provide data via file upload or CSV text');
+        showNotification('Please provide data via file upload or CSV text', 'error');
+        setIsLoading(false);
         return;
       }
 
       if (players.length === 0) {
-        alert('No valid player data found');
+        showNotification('No valid player data found', 'error');
+        setIsLoading(false);
         return;
       }
 
     } catch (error) {
-      alert(`Error processing file: ${(error as Error).message}`);
+      showNotification(`Error processing file: ${(error as Error).message}`, 'error');
+      setIsLoading(false);
       return;
     }
     
@@ -422,6 +437,8 @@ const GolfTournamentSystem = () => {
     setUploadData({ name: '', date: '', type: 'Tour Event', format: 'Stroke Play', csvData: '', uploadMethod: 'csv' });
     setSelectedFile(null);
     setShowUpload(false);
+    setIsLoading(false);
+    showNotification(`Tournament "${newTournament.name}" uploaded successfully!`, 'success');
   };
 
   const generateLeaderboard = (type: string) => {
@@ -503,10 +520,18 @@ const GolfTournamentSystem = () => {
   const selectedTournamentData = tournaments.find(t => t.id === parseInt(selectedTournament));
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="text-yellow-500" size={20} />;
-    if (rank === 2) return <Award className="text-gray-400" size={20} />;
-    if (rank === 3) return <Star className="text-amber-600" size={20} />;
+    if (rank === 1) return <Crown className="text-yellow-500 drop-shadow-lg" size={20} />;
+    if (rank === 2) return <Medal className="text-gray-400 drop-shadow-lg" size={20} />;
+    if (rank === 3) return <Award className="text-amber-600 drop-shadow-lg" size={20} />;
     return null;
+  };
+
+  const getPositionBadge = (position: number) => {
+    if (position === 1) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-500/50';
+    if (position === 2) return 'bg-gradient-to-r from-gray-300 to-gray-500 text-white shadow-lg shadow-gray-400/50';
+    if (position === 3) return 'bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-lg shadow-amber-600/50';
+    if (position <= 10) return 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/50';
+    return 'bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/50';
   };
 
   const getTournamentTypeColor = (type: string) => {
@@ -521,11 +546,32 @@ const GolfTournamentSystem = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-20">
+      {/* Enhanced animated background */}
+      <div className="absolute inset-0 opacity-30">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-1/6 right-1/3 w-64 h-64 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '3s'}}></div>
       </div>
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`fixed top-6 right-6 z-50 p-4 rounded-lg shadow-2xl backdrop-blur-sm transform transition-all duration-300 animate-in slide-in-from-right ${
+          notification.type === 'success' 
+            ? 'bg-green-500/90 border border-green-400/50 text-white' 
+            : 'bg-red-500/90 border border-red-400/50 text-white'
+        }`}>
+          <div className="flex items-center gap-3">
+            {notification.type === 'success' ? (
+              <Sparkles className="text-white" size={20} />
+            ) : (
+              <X className="text-white" size={20} />
+            )}
+            <span className="font-medium">{notification.message}</span>
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10 p-6">
         <div className="max-w-7xl mx-auto">
@@ -535,15 +581,20 @@ const GolfTournamentSystem = () => {
                 <Trophy className="text-white" size={40} />
               </div>
             </div>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
+            <h1 className="text-6xl font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-4 animate-in fade-in-0 duration-1000">
               Golf Tournament Pro
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Sparkles className="text-emerald-400 animate-pulse" size={24} />
+              <span className="text-lg font-semibold text-emerald-400">Elite Championship Series</span>
+              <Sparkles className="text-emerald-400 animate-pulse" size={24} />
+            </div>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in-0 duration-1000 delay-300">
               Professional tournament management with real-time leaderboards, comprehensive scoring, and advanced analytics
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 mb-8 justify-center">
+          <div className="flex flex-wrap gap-4 mb-8 justify-center animate-in fade-in-0 duration-1000 delay-500">
             <button
               onClick={() => setActiveTab('leaderboard')}
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
@@ -775,9 +826,20 @@ const GolfTournamentSystem = () => {
                 <div className="flex gap-4 mt-8">
                   <button
                     onClick={handleUpload}
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold"
+                    disabled={isLoading}
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    Upload Tournament
+                    {isLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={20} />
+                        Upload Tournament
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={() => {
@@ -796,7 +858,7 @@ const GolfTournamentSystem = () => {
 
           {activeTab === 'schedule' && (
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
-              <div className="mb-8">
+              <div className="mb-8 animate-in fade-in-0 duration-1000">
                 <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                   <Target className="text-emerald-400" size={32} />
                   2025 Season Schedule
@@ -813,7 +875,7 @@ const GolfTournamentSystem = () => {
                     
                     <div className="space-y-4">
                       {events.map((event, index) => (
-                        <div key={index} className={`p-4 rounded-xl border transition-all duration-300 hover:scale-105 ${
+                        <div key={index} className={`p-4 rounded-xl border transition-all duration-300 hover:scale-105 hover:shadow-xl animate-in fade-in-0 duration-500 ${
                           event.type === 'Major' ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-purple-500/30' :
                           event.type === 'Tour Event' ? 'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border-blue-500/30' :
                           event.type === 'League' ? 'bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30' :
@@ -890,7 +952,7 @@ const GolfTournamentSystem = () => {
 
           {activeTab === 'leaderboard' && (
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
-              <div className="flex flex-wrap gap-6 mb-8 items-center justify-between">
+              <div className="flex flex-wrap gap-6 mb-8 items-center justify-between animate-in fade-in-0 duration-1000">
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                     <TrendingUp className="text-emerald-400" size={32} />
@@ -958,28 +1020,30 @@ const GolfTournamentSystem = () => {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-xl border border-white/10">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Rank</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Player</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Club</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Avg {leaderboardType === 'net' ? 'Net' : 'Gross'}</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Total Points</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Events Counting</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Total Played</th>
-                      <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Best Finish</th>
+                    <tr className="border-b border-white/20 bg-gradient-to-r from-white/10 to-white/5">
+                      <th className="text-left p-4 font-semibold text-gray-200">Rank</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Player</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Club</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Avg {leaderboardType === 'net' ? 'Net' : 'Gross'}</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Total Points</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Events Counting</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Total Played</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Best Finish</th>
                     </tr>
                   </thead>
                   <tbody>
                     {generateLeaderboard(leaderboardType).map((player: any, index) => (
-                      <tr key={player.name} className="border-b border-white/10 hover:bg-white/5 transition-all duration-300 group">
+                      <tr key={player.name} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
+                        index <= 2 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                      }`} style={{animationDelay: `${index * 100}ms`}}>
                         <td className="p-4 font-bold text-white">
                           <div className="flex items-center gap-3">
-                            <span className={`text-lg ${index < 3 ? 'text-2xl' : ''}`}>
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(index + 1)}`}>
                               {index + 1}
-                            </span>
+                            </div>
                             {getRankIcon(index + 1)}
                           </div>
                         </td>
@@ -1001,9 +1065,9 @@ const GolfTournamentSystem = () => {
                         </td>
                         <td className="p-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25' : 
-                            player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25' : 
-                            'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25'
+                            player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                            player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                            'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                           }`}>
                             {player.club}
                           </span>
@@ -1014,9 +1078,12 @@ const GolfTournamentSystem = () => {
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className="text-emerald-400 font-bold text-lg">
-                            {player.totalPoints.toFixed(1)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-emerald-400 font-bold text-lg">
+                              {player.totalPoints.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-emerald-300">pts</span>
+                          </div>
                         </td>
                         <td className="p-4">
                           <span className="text-blue-400 font-medium">
@@ -1044,7 +1111,7 @@ const GolfTournamentSystem = () => {
 
           {activeTab === 'tournaments' && (
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
-              <div className="flex flex-wrap gap-6 mb-8 items-center justify-between">
+              <div className="flex flex-wrap gap-6 mb-8 items-center justify-between animate-in fade-in-0 duration-1000">
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                     <Calendar className="text-emerald-400" size={32} />
@@ -1103,32 +1170,34 @@ const GolfTournamentSystem = () => {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto rounded-xl border border-white/10">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-white/20">
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Position</th>
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Player</th>
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Club</th>
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Gross</th>
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Net</th>
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Handicap</th>
-                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Points</th>
+                        <tr className="border-b border-white/20 bg-gradient-to-r from-white/10 to-white/5">
+                          <th className="text-left p-4 font-semibold text-gray-200">Position</th>
+                          <th className="text-left p-4 font-semibold text-gray-200">Player</th>
+                          <th className="text-left p-4 font-semibold text-gray-200">Club</th>
+                          <th className="text-left p-4 font-semibold text-gray-200">Gross</th>
+                          <th className="text-left p-4 font-semibold text-gray-200">Net</th>
+                          <th className="text-left p-4 font-semibold text-gray-200">Handicap</th>
+                          <th className="text-left p-4 font-semibold text-gray-200">Points</th>
                         </tr>
                       </thead>
                       <tbody>
                         {selectedTournamentData.players.map((player: any, index) => (
-                          <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-all duration-300 group">
+                          <tr key={index} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
+                            player.position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                          }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
-                                <span className={`text-lg ${player.position <= 3 ? 'text-2xl' : ''}`}>
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(player.position)}`}>
                                   {player.position}
-                                  {player.tied && player.tied > 1 && (
-                                    <span className="text-xs text-yellow-400 ml-1 bg-yellow-400/20 px-1 rounded">
-                                      T{player.tied}
-                                    </span>
-                                  )}
-                                </span>
+                                </div>
+                                {player.tied && player.tied > 1 && (
+                                  <span className="text-xs text-yellow-400 bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
+                                    T{player.tied}
+                                  </span>
+                                )}
                                 {getRankIcon(player.position)}
                               </div>
                             </td>
@@ -1147,9 +1216,9 @@ const GolfTournamentSystem = () => {
                             </td>
                             <td className="p-4">
                               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25' : 
-                                player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25' : 
-                                'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25'
+                                player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                                player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                                'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                               }`}>
                                 {player.club}
                               </span>
@@ -1160,12 +1229,15 @@ const GolfTournamentSystem = () => {
                             </td>
                             <td className="p-4 text-gray-300">{player.handicap}</td>
                             <td className="p-4">
-                              <span className="text-yellow-400 font-bold text-lg">
-                                {typeof player.points === 'number' ? player.points.toFixed(2) : player.points}
+                              <div className="flex items-center gap-2">
+                                <span className="text-yellow-400 font-bold text-lg">
+                                  {typeof player.points === 'number' ? player.points.toFixed(2) : player.points}
+                                </span>
+                                <span className="text-xs text-yellow-300">pts</span>
                                 {player.tied && player.tied > 1 && (
-                                  <span className="text-xs text-gray-400 ml-1">(split)</span>
+                                  <span className="text-xs text-gray-400 bg-gray-400/20 px-1 py-0.5 rounded">(split)</span>
                                 )}
-                              </span>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1176,8 +1248,8 @@ const GolfTournamentSystem = () => {
               )}
 
               {tournaments.length === 0 && (
-                <div className="text-center py-20">
-                  <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full mb-6 opacity-50">
+                <div className="text-center py-20 animate-in fade-in-0 duration-1000">
+                  <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full mb-6 opacity-50 animate-pulse">
                     <Users className="text-white" size={40} />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-3">No Tournaments Yet</h3>
