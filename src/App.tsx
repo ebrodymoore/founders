@@ -2,8 +2,38 @@ import { useState } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
+interface Player {
+  name: string;
+  club: string;
+  net: number;
+  gross: number;
+  handicap: number;
+  position: number;
+  points: number;
+  tied?: number;
+  [key: string]: any;
+}
+
+interface Tournament {
+  id: number;
+  name: string;
+  date: string;
+  type: string;
+  format: string;
+  players: Player[];
+}
+
+interface ScheduleEvent {
+  date: string;
+  name: string;
+  type: string;
+  status: string;
+  venue?: string;
+  subtitle?: string;
+}
+
 const GolfTournamentSystem = () => {
-  const [tournaments, setTournaments] = useState([]);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState('');
   const [activeTab, setActiveTab] = useState('leaderboard');
   const [leaderboardType, setLeaderboardType] = useState('net');
@@ -20,10 +50,10 @@ const GolfTournamentSystem = () => {
     csvData: '',
     uploadMethod: 'csv'
   });
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Schedule data
-  const schedule = {
+  const schedule: Record<string, ScheduleEvent[]> = {
     'MAY': [
       { date: 'June 5–15', name: 'U.S. Open', type: 'Major', status: 'upcoming' },
       { date: 'June 12', name: 'Supr Club #2', type: 'SUPR', venue: 'Outdoor', status: 'upcoming' },
@@ -56,7 +86,7 @@ const GolfTournamentSystem = () => {
   };
 
   // Points system based on tournament type
-  const pointsSystem = {
+  const pointsSystem: Record<string, Record<number, number>> = {
     'Major': {
       1: 750, 2: 400, 3: 350, 4: 325, 5: 300, 6: 275, 7: 225, 8: 200, 9: 175, 10: 150,
       11: 130, 12: 120, 13: 110, 14: 100, 15: 90, 16: 80, 17: 70, 18: 65, 19: 60, 20: 55,
@@ -98,7 +128,7 @@ const GolfTournamentSystem = () => {
       'SUPR': 0
     };
 
-    Object.values(schedule).flat().forEach(event => {
+    Object.values(schedule).flat().forEach((event: ScheduleEvent) => {
       if (event.status === 'upcoming') {
         remainingEvents[event.type as keyof typeof remainingEvents]++;
       }
@@ -124,8 +154,8 @@ const GolfTournamentSystem = () => {
   // Check if player has secured playoff spot
   const isPlayoffQualified = (player: any, leaderboard: any) => {
     const remaining = calculateRemainingPoints();
-    const clubPlayers = leaderboard.filter(p => p.club === player.club);
-    const playerRankInClub = clubPlayers.findIndex(p => p.name === player.name) + 1;
+    const clubPlayers = leaderboard.filter((p: any) => p.club === player.club);
+    const playerRankInClub = clubPlayers.findIndex((p: any) => p.name === player.name) + 1;
     
     if (playerRankInClub <= 4) {
       // Player is currently in top 4 for their club
@@ -169,12 +199,12 @@ const GolfTournamentSystem = () => {
     });
   };
 
-  const parseXLSX = async (file) => {
+  const parseXLSX = async (file: File): Promise<any[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = new Uint8Array(e.target.result);
+          const data = new Uint8Array(e.target!.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           
           const firstSheetName = workbook.SheetNames[0];
@@ -186,20 +216,20 @@ const GolfTournamentSystem = () => {
             return;
           }
           
-          const headers = jsonData[0].map(h => h ? h.toString().trim() : '');
-          const players = jsonData.slice(1).map(row => {
-            const player = {};
-            headers.forEach((header, index) => {
+          const headers = (jsonData[0] as any[]).map((h: any) => h ? h.toString().trim() : '');
+          const players = (jsonData.slice(1) as any[][]).map(row => {
+            const player: { [key: string]: string } = {};
+            headers.forEach((header: string, index: number) => {
               player[header] = row[index] ? row[index].toString().trim() : '';
             });
             return player;
           }).filter(player => {
-            return Object.values(player).some(value => value !== '');
+            return Object.values(player).some((value: string) => value !== '');
           });
           
           resolve(players);
         } catch (error) {
-          reject(error);
+          reject(error as Error);
         }
       };
       reader.onerror = () => reject(new Error('Failed to read file'));
@@ -207,8 +237,8 @@ const GolfTournamentSystem = () => {
     });
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
       const extension = file.name.toLowerCase().split('.').pop();
@@ -220,12 +250,12 @@ const GolfTournamentSystem = () => {
     }
   };
 
-  const handleTies = (sortedPlayers, tournamentType, format) => {
-    const groups = [];
-    let currentGroup = [];
-    let currentScore = null;
+  const handleTies = (sortedPlayers: any[], tournamentType: string, format: string) => {
+    const groups: any[][] = [];
+    let currentGroup: any[] = [];
+    let currentScore: number | null = null;
 
-    sortedPlayers.forEach(player => {
+    sortedPlayers.forEach((player: any) => {
       const score = format === 'Stableford' ? player.net : (player.net || player.Score || 0);
       if (currentScore === null || score === currentScore) {
         currentGroup.push(player);
@@ -244,7 +274,7 @@ const GolfTournamentSystem = () => {
     }
 
     let currentPosition = 1;
-    const processedPlayers = [];
+    const processedPlayers: any[] = [];
 
     groups.forEach(group => {
       if (group.length === 1) {
@@ -284,7 +314,7 @@ const GolfTournamentSystem = () => {
     return processedPlayers;
   };
 
-  const calculatePoints = (position, tournamentType) => {
+  const calculatePoints = (position: number, tournamentType: string) => {
     const points = pointsSystem[tournamentType];
     return points[position] || (position <= 20 ? Math.max(30 - position, 5) : 0);
   };
@@ -295,7 +325,7 @@ const GolfTournamentSystem = () => {
       return;
     }
 
-    let players = [];
+    let players: any[] = [];
 
     try {
       if (uploadData.uploadMethod === 'file' && selectedFile) {
@@ -306,7 +336,13 @@ const GolfTournamentSystem = () => {
         } else if (extension === 'csv') {
           const csvText = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.onload = (e) => {
+              if (e.target && typeof e.target.result === 'string') {
+                resolve(e.target.result);
+              } else {
+                reject(new Error('Failed to read file as text'));
+              }
+            };
             reader.onerror = () => reject(new Error('Failed to read CSV file'));
             reader.readAsText(selectedFile);
           });
@@ -328,7 +364,7 @@ const GolfTournamentSystem = () => {
       }
 
     } catch (error) {
-      alert(`Error processing file: ${error.message}`);
+      alert(`Error processing file: ${(error as Error).message}`);
       return;
     }
     
@@ -373,7 +409,7 @@ const GolfTournamentSystem = () => {
 
     const finalPlayers = handleTies(sortedPlayers, uploadData.type, uploadData.format);
 
-    const newTournament = {
+    const newTournament: Tournament = {
       id: Date.now(),
       name: uploadData.name,
       date: uploadData.date,
@@ -388,11 +424,11 @@ const GolfTournamentSystem = () => {
     setShowUpload(false);
   };
 
-  const generateLeaderboard = (type) => {
-    const playerStats = {};
+  const generateLeaderboard = (type: string) => {
+    const playerStats: Record<string, any> = {};
     
     tournaments.forEach(tournament => {
-      tournament.players.forEach(player => {
+      tournament.players.forEach((player: any) => {
         // Use the standardized name field from processed players
         const name = player.name || player.Name || player['Player Name'] || 'Unknown';
         const club = player.club || player.Club || player['Club Name'] || 'Unknown';
@@ -426,19 +462,19 @@ const GolfTournamentSystem = () => {
     });
 
     // Process each player's results to get top 8 events and calculate stats
-    Object.values(playerStats).forEach(player => {
+    Object.values(playerStats).forEach((player: any) => {
       // Sort events by points (highest first) and take top 8
-      const sortedEvents = player.allEvents.sort((a, b) => b.points - a.points);
+      const sortedEvents = player.allEvents.sort((a: any, b: any) => b.points - a.points);
       const top8Events = sortedEvents.slice(0, 8);
       
       // Calculate stats based on top 8 events
-      player.totalPoints = top8Events.reduce((sum, event) => sum + event.points, 0);
+      player.totalPoints = top8Events.reduce((sum: number, event: any) => sum + event.points, 0);
       player.countingEvents = top8Events.length;
       player.totalEvents = player.allEvents.length;
       
       if (top8Events.length > 0) {
-        player.avgGross = Math.round(top8Events.reduce((sum, event) => sum + event.gross, 0) / top8Events.length);
-        player.avgNet = Math.round(top8Events.reduce((sum, event) => sum + event.net, 0) / top8Events.length);
+        player.avgGross = Math.round(top8Events.reduce((sum: number, event: any) => sum + event.gross, 0) / top8Events.length);
+        player.avgNet = Math.round(top8Events.reduce((sum: number, event: any) => sum + event.net, 0) / top8Events.length);
       } else {
         player.avgGross = 0;
         player.avgNet = 0;
@@ -446,8 +482,8 @@ const GolfTournamentSystem = () => {
     });
 
     const sortedPlayers = Object.values(playerStats)
-      .filter(player => player.countingEvents > 0) // Only include players with at least one event
-      .sort((a, b) => {
+      .filter((player: any) => player.countingEvents > 0) // Only include players with at least one event
+      .sort((a: any, b: any) => {
         // Primary sort by total points (highest first)
         if (b.totalPoints !== a.totalPoints) {
           return b.totalPoints - a.totalPoints;
@@ -466,14 +502,14 @@ const GolfTournamentSystem = () => {
 
   const selectedTournamentData = tournaments.find(t => t.id === parseInt(selectedTournament));
 
-  const getRankIcon = (rank) => {
+  const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="text-yellow-500" size={20} />;
     if (rank === 2) return <Award className="text-gray-400" size={20} />;
     if (rank === 3) return <Star className="text-amber-600" size={20} />;
     return null;
   };
 
-  const getTournamentTypeColor = (type) => {
+  const getTournamentTypeColor = (type: string) => {
     switch (type) {
       case 'Major': return 'from-purple-600 to-pink-600';
       case 'Tour Event': return 'from-blue-600 to-cyan-600';
@@ -937,7 +973,7 @@ const GolfTournamentSystem = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {generateLeaderboard(leaderboardType).map((player, index) => (
+                    {generateLeaderboard(leaderboardType).map((player: any, index) => (
                       <tr key={player.name} className="border-b border-white/10 hover:bg-white/5 transition-all duration-300 group">
                         <td className="p-4 font-bold text-white">
                           <div className="flex items-center gap-3">
@@ -958,7 +994,7 @@ const GolfTournamentSystem = () => {
                             <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
                               {player.name}
                               {isPlayoffQualified(player, generateLeaderboard(leaderboardType)) && (
-                                <Star className="inline ml-2 text-yellow-400" size={16} title="Qualified for Playoffs" />
+                                <Star className="inline ml-2 text-yellow-400" size={16} />
                               )}
                             </span>
                           </div>
@@ -1077,10 +1113,11 @@ const GolfTournamentSystem = () => {
                           <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Gross</th>
                           <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Net</th>
                           <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Handicap</th>
+                          <th className="text-left p-4 font-semibold text-gray-300 bg-white/5">Points</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedTournamentData.players.map((player, index) => (
+                        {selectedTournamentData.players.map((player: any, index) => (
                           <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-all duration-300 group">
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
