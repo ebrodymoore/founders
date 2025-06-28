@@ -52,11 +52,19 @@ const GolfTournamentSystem = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<any | null>(null);
+  const [showPlayerDetails, setShowPlayerDetails] = useState(false);
 
   // Show notification and auto-hide after 3 seconds
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Handle opening player details modal
+  const handlePlayerClick = (player: any) => {
+    setSelectedPlayer(player);
+    setShowPlayerDetails(true);
   };
 
   // Function to determine event status based on current date
@@ -901,6 +909,109 @@ const GolfTournamentSystem = () => {
             </div>
           )}
 
+          {showPlayerDetails && selectedPlayer && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                      <Trophy className="text-emerald-400" size={32} />
+                      {selectedPlayer.name}
+                    </h3>
+                    <div className="flex items-center gap-4 text-gray-300">
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        selectedPlayer.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                        selectedPlayer.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                        'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
+                      }`}>
+                        {selectedPlayer.club}
+                      </span>
+                      <span className="text-emerald-400 font-bold text-lg">{selectedPlayer.totalPoints.toFixed(1)} pts</span>
+                      <span className="text-blue-400">{selectedPlayer.countingEvents}/8 events counting</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowPlayerDetails(false)}
+                    className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20"
+                  >
+                    <X className="text-white" size={24} />
+                  </button>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="text-xl font-bold text-white mb-4">Tournament Results</h4>
+                  <div className="grid gap-4">
+                    {selectedPlayer.allEvents.map((event: any, index: number) => (
+                      <div key={index} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-white text-lg">{event.tournamentName}</h5>
+                            <p className="text-gray-300 text-sm">{event.tournamentDate}</p>
+                          </div>
+                          <div className="flex items-center gap-6 text-right">
+                            <div>
+                              <div className="text-gray-400 text-xs">Position</div>
+                              <div className={`font-bold text-lg ${
+                                event.position === 1 ? 'text-yellow-400' :
+                                event.position <= 3 ? 'text-emerald-400' :
+                                event.position <= 10 ? 'text-blue-400' :
+                                'text-gray-300'
+                              }`}>
+                                {event.position === Infinity ? '-' : event.position}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-gray-400 text-xs">Gross</div>
+                              <div className="text-white font-medium text-lg">{event.gross}</div>
+                            </div>
+                            <div>
+                              <div className="text-gray-400 text-xs">Net</div>
+                              <div className="text-emerald-400 font-medium text-lg">{event.net}</div>
+                            </div>
+                            <div>
+                              <div className="text-gray-400 text-xs">Points</div>
+                              <div className="text-yellow-400 font-bold text-lg">{event.points.toFixed(1)}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-white/20 pt-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <div className="text-gray-400 text-sm mb-1">Total Events</div>
+                      <div className="text-white font-bold text-2xl">{selectedPlayer.totalEvents}</div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <div className="text-gray-400 text-sm mb-1">Counting Events</div>
+                      <div className="text-blue-400 font-bold text-2xl">{selectedPlayer.countingEvents}</div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <div className="text-gray-400 text-sm mb-1">Best Finish</div>
+                      <div className={`font-bold text-2xl ${
+                        selectedPlayer.bestFinish === 1 ? 'text-yellow-400' :
+                        selectedPlayer.bestFinish <= 3 ? 'text-emerald-400' :
+                        selectedPlayer.bestFinish <= 10 ? 'text-blue-400' :
+                        'text-gray-300'
+                      }`}>
+                        {selectedPlayer.bestFinish === Infinity ? '-' : selectedPlayer.bestFinish}
+                      </div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <div className="text-gray-400 text-sm mb-1">Avg {leaderboardType === 'net' ? 'Net' : 'Gross'}</div>
+                      <div className="text-emerald-400 font-bold text-2xl">
+                        {leaderboardType === 'net' ? selectedPlayer.avgNet : selectedPlayer.avgGross}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'schedule' && (
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
               <div className="mb-8 animate-in fade-in-0 duration-1000">
@@ -1097,12 +1208,15 @@ const GolfTournamentSystem = () => {
                               index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
                               'bg-gradient-to-r from-blue-400 to-blue-600'
                             }`}></div>
-                            <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
+                            <button
+                              onClick={() => handlePlayerClick(player)}
+                              className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300 hover:underline cursor-pointer text-left"
+                            >
                               {player.name}
                               {isPlayoffQualified(player, generateLeaderboard(leaderboardType)) && (
                                 <Star className="inline ml-2 text-yellow-400" size={16} />
                               )}
-                            </span>
+                            </button>
                           </div>
                         </td>
                         <td className="p-4">
