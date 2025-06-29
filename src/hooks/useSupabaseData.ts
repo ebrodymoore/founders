@@ -140,10 +140,13 @@ export const useSupabaseData = () => {
     playersData: any[]
   ) => {
     setIsLoading(true)
+    console.log('🏆 Starting tournament upload:', { tournamentData, playersCount: playersData.length })
     
     try {
       // Create tournament
+      console.log('📝 Creating tournament in database...')
       const tournament = await tournamentService.create(tournamentData)
+      console.log('✅ Tournament created:', tournament)
       
       // Process players and create results
       const results: Omit<TournamentResult, 'id' | 'created_at' | 'updated_at'>[] = []
@@ -175,17 +178,29 @@ export const useSupabaseData = () => {
       }
       
       // Bulk insert results
+      console.log('💾 Saving tournament results to database:', results.length, 'results')
       await tournamentResultService.createBulk(results)
+      console.log('✅ Tournament results saved')
       
       // Update local state
       setTournaments(prev => [tournament, ...prev])
+      console.log('🔄 Local state updated')
       
       // Reload leaderboard
+      console.log('📊 Reloading leaderboard...')
       await loadLeaderboard()
+      console.log('✅ Leaderboard reloaded')
       
       showNotification(`Tournament "${tournament.name}" uploaded successfully!`, 'success')
       return tournament
     } catch (error) {
+      console.error('❌ Tournament upload failed:', error)
+      console.error('Error details:', {
+        message: (error as any)?.message,
+        code: (error as any)?.code,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint
+      })
       handleError(error, 'uploadTournamentWithResults')
       throw error
     } finally {

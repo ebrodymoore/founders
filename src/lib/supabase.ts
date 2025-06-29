@@ -13,6 +13,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your Vercel dashboard.')
 }
 
+// Debug logging for production troubleshooting
+console.log('Supabase config:', {
+  url: supabaseUrl,
+  keyLength: supabaseAnonKey?.length,
+  environment: import.meta.env.MODE
+})
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Database types for TypeScript
