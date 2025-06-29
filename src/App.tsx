@@ -422,6 +422,149 @@ const GolfTournamentSystem = () => {
     });
   };
 
+  // SUPR-specific parsing functions for flexible formats
+  const parseSuprCSV = (csvText: string) => {
+    const lines = csvText.trim().split('\n').filter(line => line.trim());
+    if (lines.length === 0) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    
+    return lines.slice(1).map((line, index) => {
+      const values = line.split(',').map(v => v.trim());
+      const player = parseSuprPlayerData(headers, values, index + 1);
+      return player;
+    }).filter(player => player !== null);
+  };
+
+  const parseSuprXLSX = async (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target!.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length === 0) {
+            reject(new Error('Empty spreadsheet'));
+            return;
+          }
+          
+          const headers = (jsonData[0] as any[]).map((h: any) => 
+            h ? h.toString().trim().toLowerCase() : ''
+          );
+          
+          const players = (jsonData.slice(1) as any[][]).map((row, index) => {
+            const values = row.map(cell => cell ? cell.toString().trim() : '');
+            return parseSuprPlayerData(headers, values, index + 1);
+          }).filter(player => player !== null);
+          
+          resolve(players);
+        } catch (error) {
+          reject(error as Error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Flexible parser for SUPR player data that handles various column formats
+  const parseSuprPlayerData = (headers: string[], values: string[], rowIndex: number) => {
+    // Skip empty rows
+    if (values.every(v => !v || v.trim() === '')) {
+      return null;
+    }
+
+    // Initialize player data with defaults
+    let playerName = '';
+    let score = 0;
+    let position = rowIndex; // Default to row number if no position found
+    
+    // Try to find player name in various column formats
+    const namePatterns = [
+      'name', 'player name', 'player', 'display name', 'full name', 
+      'first name', 'last name', 'participant', 'golfer'
+    ];
+    
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i];
+      const value = values[i] || '';
+      
+      // Look for name columns
+      if (namePatterns.some(pattern => header.includes(pattern))) {
+        if (value && !playerName) {
+          playerName = value;
+        }
+      }
+      
+      // Look for score columns
+      const scorePatterns = [
+        'score', 'total', 'points', 'final score', 'net', 'gross', 'result'
+      ];
+      if (scorePatterns.some(pattern => header.includes(pattern))) {
+        const parsedScore = parseFloat(value);
+        if (!isNaN(parsedScore)) {
+          score = parsedScore;
+        }
+      }
+      
+      // Look for position/place columns
+      const positionPatterns = [
+        'position', 'place', 'rank', 'pos', 'placement', 'finish'
+      ];
+      if (positionPatterns.some(pattern => header.includes(pattern))) {
+        const parsedPosition = parseInt(value);
+        if (!isNaN(parsedPosition)) {
+          position = parsedPosition;
+        }
+      }
+    }
+    
+    // If no name found in headers, try to guess from values
+    if (!playerName) {
+      // Look for the first non-numeric value that's not a position
+      for (let i = 0; i < values.length; i++) {
+        const value = values[i] || '';
+        // Check if it's a likely name (not a number and reasonable length)
+        if (value && 
+            isNaN(parseFloat(value)) && 
+            value.length > 1 && 
+            value.length < 50 && // Reasonable name length
+            !/^\d+$/.test(value.trim())) { // Not just digits
+          playerName = value;
+          break;
+        }
+      }
+    }
+    
+    // Additional cleanup for player names
+    if (playerName) {
+      // Remove common prefixes/suffixes and clean up
+      playerName = playerName
+        .replace(/^(player|participant|golfer)\s*/i, '') // Remove common prefixes
+        .replace(/\s*(score|points|total)$/i, '') // Remove score-related suffixes
+        .trim();
+    }
+    
+    // Fallback: if still no name, use a default
+    if (!playerName) {
+      playerName = `Player ${rowIndex}`;
+    }
+    
+    // Return standardized player object for SUPR events
+    return {
+      'Player Name': playerName,
+      'Score': score.toString(),
+      'Position': position.toString(),
+      'Course Handicap': '0', // Default handicap for SUPR
+      'Club': 'Unknown' // Will be determined by player mapping or set during processing
+    };
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -519,7 +662,12 @@ const GolfTournamentSystem = () => {
         const extension = selectedFile.name.toLowerCase().split('.').pop();
         
         if (extension === 'xlsx' || extension === 'xls') {
-          players = await parseXLSX(selectedFile);
+          // Use SUPR parsing for SUPR events, standard parsing for others
+          if (uploadData.type === 'SUPR') {
+            players = await parseSuprXLSX(selectedFile);
+          } else {
+            players = await parseXLSX(selectedFile);
+          }
         } else if (extension === 'csv') {
           const csvText = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -533,14 +681,24 @@ const GolfTournamentSystem = () => {
             reader.onerror = () => reject(new Error('Failed to read CSV file'));
             reader.readAsText(selectedFile);
           });
-          players = parseCSV(csvText);
+          // Use SUPR parsing for SUPR events, standard parsing for others
+          if (uploadData.type === 'SUPR') {
+            players = parseSuprCSV(csvText);
+          } else {
+            players = parseCSV(csvText);
+          }
         } else {
           showNotification('Please select a CSV or Excel (.xlsx) file', 'error');
           setIsLoading(false);
           return;
         }
       } else if (uploadData.uploadMethod === 'csv' && uploadData.csvData) {
-        players = parseCSV(uploadData.csvData);
+        // Use SUPR parsing for SUPR events, standard parsing for others
+        if (uploadData.type === 'SUPR') {
+          players = parseSuprCSV(uploadData.csvData);
+        } else {
+          players = parseCSV(uploadData.csvData);
+        }
       } else {
         showNotification('Please provide data via file upload or CSV text', 'error');
         setIsLoading(false);
