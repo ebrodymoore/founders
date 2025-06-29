@@ -74,7 +74,7 @@ const GolfTournamentSystem = () => {
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
   const [showMappings, setShowMappings] = useState(false);
   const [newMapping, setNewMapping] = useState({ trackmanId: '', name: '', club: 'Sylvan' });
-  const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string}>>([]);
+  const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}>>([]);
   const [showNewPlayersModal, setShowNewPlayersModal] = useState(false);
   const [pendingTournamentData, setPendingTournamentData] = useState<any>(null);
   // Use Supabase notification system
@@ -128,8 +128,8 @@ const GolfTournamentSystem = () => {
   };
 
   // Function to detect new players in uploaded tournament data
-  const detectNewPlayers = (players: any[]): Array<{trackmanId: string, suggestedName: string}> => {
-    const newPlayers: Array<{trackmanId: string, suggestedName: string}> = [];
+  const detectNewPlayers = (players: any[]): Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}> => {
+    const newPlayers: Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}> = [];
     
     players.forEach(player => {
       const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
@@ -146,7 +146,8 @@ const GolfTournamentSystem = () => {
         if (!alreadyFound) {
           newPlayers.push({
             trackmanId: trackmanId,
-            suggestedName: trackmanId // Use trackmanId as suggested display name
+            suggestedName: trackmanId, // Use trackmanId as suggested display name
+            club: 'Sylvan' // Default to Sylvan, admin can change in modal
           });
         }
       }
@@ -160,7 +161,7 @@ const GolfTournamentSystem = () => {
     try {
       // Add all new players to database
       for (const newPlayer of newPlayersFound) {
-        await addPlayer(newPlayer.trackmanId, newPlayer.suggestedName, 'Sylvan'); // Default to Sylvan, admin can change later
+        await addPlayer(newPlayer.trackmanId, newPlayer.suggestedName, newPlayer.club);
       }
       
       // Close modal and proceed with tournament upload
@@ -2077,10 +2078,19 @@ const GolfTournamentSystem = () => {
                         />
                       </div>
                       <div className="col-span-3">
-                        <div className="text-gray-400 text-sm mb-2">Default Club</div>
-                        <div className="text-gray-300 text-sm">
-                          Will be set to <span className="text-emerald-400 font-semibold">Sylvan</span> (can be changed later)
-                        </div>
+                        <div className="text-gray-400 text-sm mb-2">Club</div>
+                        <select
+                          value={newPlayer.club}
+                          onChange={(e) => {
+                            const updatedPlayers = [...newPlayersFound];
+                            updatedPlayers[index].club = e.target.value as 'Sylvan' | '8th';
+                            setNewPlayersFound(updatedPlayers);
+                          }}
+                          className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                        >
+                          <option value="Sylvan" className="bg-gray-800">Sylvan</option>
+                          <option value="8th" className="bg-gray-800">8th</option>
+                        </select>
                       </div>
                     </div>
                   </div>
