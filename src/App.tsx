@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown } from 'lucide-react';
+import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface Player {
@@ -54,6 +54,14 @@ const GolfTournamentSystem = () => {
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<any | null>(null);
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
+  const [usernameMappings, setUsernameMappings] = useState<Record<string, string>>({
+    // Default mappings - can be edited by admin
+    'john.smith': 'Sylvan',
+    'jane.doe': '8th',
+    'mike.jones': 'Sylvan'
+  });
+  const [showMappings, setShowMappings] = useState(false);
+  const [newMapping, setNewMapping] = useState({ username: '', club: 'Sylvan' });
 
   // Show notification and auto-hide after 3 seconds
   const showNotification = (message: string, type: 'success' | 'error') => {
@@ -65,6 +73,39 @@ const GolfTournamentSystem = () => {
   const handlePlayerClick = (player: any) => {
     setSelectedPlayer(player);
     setShowPlayerDetails(true);
+  };
+
+  // Functions to manage username mappings
+  const addMapping = () => {
+    if (newMapping.username.trim()) {
+      setUsernameMappings({
+        ...usernameMappings,
+        [newMapping.username.toLowerCase().trim()]: newMapping.club
+      });
+      setNewMapping({ username: '', club: 'Sylvan' });
+      showNotification(`Mapping added: ${newMapping.username} → ${newMapping.club}`, 'success');
+    }
+  };
+
+  const deleteMapping = (username: string) => {
+    const updatedMappings = { ...usernameMappings };
+    delete updatedMappings[username];
+    setUsernameMappings(updatedMappings);
+    showNotification(`Mapping deleted: ${username}`, 'success');
+  };
+
+  const updateMapping = (username: string, newClub: string) => {
+    setUsernameMappings({
+      ...usernameMappings,
+      [username]: newClub
+    });
+    showNotification(`Mapping updated: ${username} → ${newClub}`, 'success');
+  };
+
+  // Function to get club from username mapping
+  const getClubFromUsername = (playerName: string): string => {
+    const username = playerName.toLowerCase().replace(/\s+/g, '.');
+    return usernameMappings[username] || 'Unknown';
   };
 
   // Function to determine event status based on current date
@@ -445,6 +486,11 @@ const GolfTournamentSystem = () => {
       const playerName = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
       const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || 0);
       
+      // Try to get club from mappings first, then fall back to provided club data
+      const providedClub = player.Club || player.club || player['Club Name'] || 'Unknown';
+      const mappedClub = getClubFromUsername(playerName);
+      const finalClub = mappedClub !== 'Unknown' ? mappedClub : providedClub;
+      
       if (uploadData.format === 'Stableford') {
         const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || 0);
         const grossStableford = netStableford - courseHandicap;
@@ -455,7 +501,7 @@ const GolfTournamentSystem = () => {
           net: netStableford,
           gross: grossStableford,
           handicap: courseHandicap,
-          club: player.Club || player.club || player['Club Name'] || 'Unknown'
+          club: finalClub
         };
       } else {
         const netScore = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || 0);
@@ -467,7 +513,7 @@ const GolfTournamentSystem = () => {
           net: netScore,
           gross: grossScore,
           handicap: courseHandicap,
-          club: player.Club || player.club || player['Club Name'] || 'Unknown'
+          club: finalClub
         };
       }
     });
@@ -691,6 +737,13 @@ const GolfTournamentSystem = () => {
                   Upload Results
                 </button>
                 <button
+                  onClick={() => setShowMappings(true)}
+                  className="group px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-blue-500/25"
+                >
+                  <Settings className="inline mr-3" size={24} />
+                  Manage Mappings
+                </button>
+                <button
                   onClick={handleLogout}
                   className="group px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-red-500/25"
                 >
@@ -904,6 +957,104 @@ const GolfTournamentSystem = () => {
                   >
                     Cancel
                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showMappings && isAdmin && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                      <Settings className="text-blue-400" size={32} />
+                      Username to Club Mappings
+                    </h3>
+                    <p className="text-gray-300">Manage automatic club assignments based on player names</p>
+                  </div>
+                  <button
+                    onClick={() => setShowMappings(false)}
+                    className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20"
+                  >
+                    <X className="text-white" size={24} />
+                  </button>
+                </div>
+
+                <div className="mb-8">
+                  <h4 className="text-xl font-bold text-white mb-4">Add New Mapping</h4>
+                  <div className="flex gap-4 items-end">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Player Name</label>
+                      <input
+                        type="text"
+                        value={newMapping.username}
+                        onChange={(e) => setNewMapping({...newMapping, username: e.target.value})}
+                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                        placeholder="e.g., John Smith (will become john.smith)"
+                      />
+                    </div>
+                    <div className="w-48">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Club</label>
+                      <select
+                        value={newMapping.club}
+                        onChange={(e) => setNewMapping({...newMapping, club: e.target.value})}
+                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                      >
+                        <option value="Sylvan" className="bg-gray-800">Sylvan</option>
+                        <option value="8th" className="bg-gray-800">8th</option>
+                      </select>
+                    </div>
+                    <button
+                      onClick={addMapping}
+                      className="px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 font-semibold flex items-center gap-2"
+                    >
+                      <Plus size={20} />
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xl font-bold text-white mb-4">Current Mappings</h4>
+                  <div className="space-y-3">
+                    {Object.entries(usernameMappings).map(([username, club]) => (
+                      <div key={username} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="text-white font-medium">{username}</div>
+                          <div className="text-gray-400">→</div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                            club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                            'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
+                          }`}>
+                            {club}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={club}
+                            onChange={(e) => updateMapping(username, e.target.value)}
+                            className="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
+                          >
+                            <option value="Sylvan" className="bg-gray-800">Sylvan</option>
+                            <option value="8th" className="bg-gray-800">8th</option>
+                          </select>
+                          <button
+                            onClick={() => deleteMapping(username)}
+                            className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-400 transition-all duration-300 border border-red-500/30"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {Object.keys(usernameMappings).length === 0 && (
+                    <div className="text-center py-8 text-gray-400">
+                      No mappings configured yet. Add your first mapping above.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
