@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
-// import { useSupabaseData } from './hooks/useSupabaseData';
+import { useSupabaseData } from './hooks/useSupabaseData';
 
 // Legacy interfaces for CSV processing
 interface LegacyPlayer {
@@ -36,80 +36,20 @@ interface ScheduleEvent {
 }
 
 const GolfTournamentSystem = () => {
-  // For now, use local state (Supabase integration in progress)
+  // For now, use local state for tournaments (will migrate to Supabase next)
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   
-  // Supabase data and operations (available but not fully integrated yet)
-  // Currently commented out to prevent build errors during migration
-  // const {
-  //   players: supabasePlayers,
-  //   tournaments: supabaseTournaments,
-  //   leaderboard: supabaseLeaderboard,
-  //   isLoading: supabaseLoading,
-  //   notification: supabaseNotification,
-  //   showNotification: supabaseShowNotification,
-  //   loadLeaderboard,
-  //   addPlayer,
-  //   updatePlayer,
-  //   deletePlayer,
-  //   uploadTournamentWithResults,
-  //   getTournamentResults,
-  //   getPlayerDetails
-  // } = useSupabaseData();
+  // Supabase data and operations
+  const {
+    players: supabasePlayers,
+    notification: supabaseNotification,
+    showNotification,
+    addPlayer,
+    updatePlayer,
+    deletePlayer
+  } = useSupabaseData();
 
-  // Local player mappings (will be migrated to Supabase)
-  const [trackmanMappings, setTrackmanMappings] = useState<Record<string, {name: string, club: string}>>({
-    // TrackmanID → {Name, Club} mappings
-    'Andrew Walker': { name: 'Andrew Walker', club: 'Sylvan' },
-    'Andy Aupperlee': { name: 'Andy Auperlee', club: 'Sylvan' },
-    'Andy Faught': { name: 'Andy Faught', club: '8th' },
-    'Annie Hinkel': { name: 'Annie Hinkel', club: '8th' },
-    'Beau Briggs': { name: 'Beau Briggs', club: 'Sylvan' },
-    'Bill Pepping': { name: 'Bill Pepping', club: '8th' },
-    'Brian Abrahamsen': { name: 'Brian Abrahamsen', club: 'Sylvan' },
-    'Camillo77': { name: 'Camillo Colombo', club: '8th' },
-    'Chad_Mathews': { name: 'Chad Mathews', club: '8th' },
-    'Chase Brannon': { name: 'Chase Brannon', club: 'Sylvan' },
-    'Cody Larriviere': { name: 'Cody Larriviere', club: 'Sylvan' },
-    'Cort McCown': { name: 'Cort McCown', club: '8th' },
-    'Daniel Dorris': { name: 'Daniel Dorris', club: '8th' },
-    'Dan Laughlin': { name: 'Dan Laughlin', club: 'Sylvan' },
-    'Dean M. Miller': { name: 'Dean M. Miller', club: '8th' },
-    'Eric Brody-Moore': { name: 'Eric Brody-Moore', club: 'Sylvan' },
-    'Freddie Z': { name: 'Freddie Zhang', club: 'Sylvan' },
-    'Gregory Hill': { name: 'Gregory Hill', club: 'Sylvan' },
-    'GroverCollins': { name: 'Grover Collins', club: 'Sylvan' },
-    'Jack Wheeler': { name: 'Jack Wheeler', club: '8th' },
-    'Jason Broyles': { name: 'Jason Broyles', club: '8th' },
-    'Jay LeDuc': { name: 'Jay Leduc', club: 'Sylvan' },
-    'Jerry Buckmaster': { name: 'Jerry Buckmaster', club: 'Sylvan' },
-    'Jim Kiedrowski': { name: 'Jim Kiedrowski', club: 'Sylvan' },
-    'John ODonnell': { name: 'John O\'Donnell', club: '8th' },
-    'Ken Major': { name: 'Ken Major', club: 'Sylvan' },
-    'M. Trebendis': { name: 'Michael Trebendis', club: '8th' },
-    'Mark Dorris': { name: 'Mark Dorris', club: '8th' },
-    'Mark Mendoza': { name: 'Mark Mendoza', club: '8th' },
-    'MH Mills': { name: 'Matt Mills', club: '8th' },
-    'Michael J Miller': { name: 'Michael J Miller', club: '8th' },
-    'Michael Mendoza': { name: 'Michael Mendoza', club: '8th' },
-    'Mike Miles': { name: 'Mike Miles', club: '8th' },
-    'Nathan Ruff': { name: 'Nathan Ruff', club: '8th' },
-    'Nima': { name: 'Nima Hayati', club: '8th' },
-    'Patrick Dailey': { name: 'Patrick Dailey', club: 'Sylvan' },
-    'Patrick Farno': { name: 'Patrick Farno', club: 'Sylvan' },
-    'Philip L': { name: 'Philip Leisy', club: '8th' },
-    'Puzzo': { name: 'Dan Puzzo', club: 'Sylvan' },
-    'Rootae': { name: 'John Root', club: '8th' },
-    'roy clancy': { name: 'Roy Clancy', club: '8th' },
-    'Ryan Smith 323': { name: 'Ryan Smith', club: 'Sylvan' },
-    'Sam Herb': { name: 'Sam Herb', club: '8th' },
-    'Tate Kloeppel': { name: 'Tate Kloeppel', club: 'Sylvan' },
-    'Tony Niknejad': { name: 'Tony Niknejad', club: 'Sylvan' },
-    'Tucker Moore': { name: 'Tucker Moore', club: 'Sylvan' },
-    'Tyler Ricker': { name: 'Tyler Ricker', club: 'Sylvan' },
-    'Weller Emmons': { name: 'Weller Emmons', club: 'Sylvan' },
-    'zandersteele': { name: 'Zander Steele', club: 'Sylvan' }
-  });
+  // Player mappings now handled by Supabase - use supabasePlayers instead
 
   // UI state
   const [selectedTournament, setSelectedTournament] = useState('');
@@ -134,13 +74,8 @@ const GolfTournamentSystem = () => {
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
   const [showMappings, setShowMappings] = useState(false);
   const [newMapping, setNewMapping] = useState({ trackmanId: '', name: '', club: 'Sylvan' });
-  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
-
-  // Show notification helper
-  const showNotification = (message: string, type: 'success' | 'error') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  // Use Supabase notification system
+  const notification = supabaseNotification;
 
   // Handle opening player details modal
   const handlePlayerClick = (player: any) => {
@@ -148,44 +83,42 @@ const GolfTournamentSystem = () => {
     setShowPlayerDetails(true);
   };
 
-  // Functions to manage Trackman mappings
-  const addMapping = () => {
+  // Functions to manage Trackman mappings using Supabase
+  const addMapping = async () => {
     if (newMapping.trackmanId.trim() && newMapping.name.trim()) {
-      setTrackmanMappings({
-        ...trackmanMappings,
-        [newMapping.trackmanId.trim()]: {
-          name: newMapping.name.trim(),
-          club: newMapping.club
-        }
-      });
-      setNewMapping({ trackmanId: '', name: '', club: 'Sylvan' });
-      showNotification(`Mapping added: ${newMapping.trackmanId} → ${newMapping.name} (${newMapping.club})`, 'success');
+      try {
+        await addPlayer(newMapping.trackmanId.trim(), newMapping.name.trim(), newMapping.club as 'Sylvan' | '8th');
+        setNewMapping({ trackmanId: '', name: '', club: 'Sylvan' });
+      } catch (error) {
+        // Error already handled by the hook
+      }
     }
   };
 
-  const deleteMapping = (trackmanId: string) => {
-    const updatedMappings = { ...trackmanMappings };
-    delete updatedMappings[trackmanId];
-    setTrackmanMappings(updatedMappings);
-    showNotification(`Mapping deleted: ${trackmanId}`, 'success');
+  const deleteMapping = async (playerId: string) => {
+    try {
+      await deletePlayer(playerId);
+    } catch (error) {
+      // Error already handled by the hook
+    }
   };
 
-  const updateMapping = (trackmanId: string, newName: string, newClub: string) => {
-    setTrackmanMappings({
-      ...trackmanMappings,
-      [trackmanId]: {
-        name: newName,
-        club: newClub
-      }
-    });
-    showNotification(`Mapping updated: ${trackmanId} → ${newName} (${newClub})`, 'success');
+  const updateMapping = async (playerId: string, newName: string, newClub: string) => {
+    try {
+      await updatePlayer(playerId, { 
+        display_name: newName, 
+        club: newClub as 'Sylvan' | '8th' 
+      });
+    } catch (error) {
+      // Error already handled by the hook
+    }
   };
 
-  // Function to get player info from Trackman ID
+  // Function to get player info from Trackman ID using Supabase
   const getPlayerFromTrackmanId = (trackmanId: string): {name: string, club: string} => {
-    const mapping = trackmanMappings[trackmanId];
-    if (mapping) {
-      return mapping;
+    const player = supabasePlayers.find(p => p.trackman_id === trackmanId);
+    if (player) {
+      return { name: player.display_name, club: player.club };
     }
     // Fallback: use the trackmanId as the name if no mapping exists
     return { name: trackmanId, club: 'Unknown' };
@@ -1113,12 +1046,12 @@ const GolfTournamentSystem = () => {
                 <div>
                   <h4 className="text-xl font-bold text-white mb-4">Current Mappings</h4>
                   <div className="space-y-3">
-                    {Object.entries(trackmanMappings).map(([trackmanId, playerInfo]) => (
-                      <div key={trackmanId} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    {supabasePlayers.map((player) => (
+                      <div key={player.id} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                         <div className="grid grid-cols-12 gap-4 items-center">
                           <div className="col-span-3">
                             <div className="text-gray-400 text-xs mb-1">Trackman ID</div>
-                            <div className="text-white font-medium">{trackmanId}</div>
+                            <div className="text-white font-medium">{player.trackman_id}</div>
                           </div>
                           <div className="col-span-1 text-center">
                             <div className="text-gray-400">→</div>
@@ -1127,16 +1060,16 @@ const GolfTournamentSystem = () => {
                             <div className="text-gray-400 text-xs mb-1">Display Name</div>
                             <input
                               type="text"
-                              value={playerInfo.name}
-                              onChange={(e) => updateMapping(trackmanId, e.target.value, playerInfo.club)}
+                              value={player.display_name}
+                              onChange={(e) => updateMapping(player.id, e.target.value, player.club)}
                               className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
                             />
                           </div>
                           <div className="col-span-2">
                             <div className="text-gray-400 text-xs mb-1">Club</div>
                             <select
-                              value={playerInfo.club}
-                              onChange={(e) => updateMapping(trackmanId, playerInfo.name, e.target.value)}
+                              value={player.club}
+                              onChange={(e) => updateMapping(player.id, player.display_name, e.target.value)}
                               className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
                             >
                               <option value="Sylvan" className="bg-gray-800">Sylvan</option>
@@ -1145,14 +1078,14 @@ const GolfTournamentSystem = () => {
                           </div>
                           <div className="col-span-2 flex justify-end">
                             <span className={`px-3 py-1 rounded-full text-sm font-semibold mr-2 ${
-                              playerInfo.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                              playerInfo.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                              player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                              player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
                               'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                             }`}>
-                              {playerInfo.club}
+                              {player.club}
                             </span>
                             <button
-                              onClick={() => deleteMapping(trackmanId)}
+                              onClick={() => deleteMapping(player.id)}
                               className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-400 transition-all duration-300 border border-red-500/30"
                             >
                               <Trash2 size={16} />
@@ -1162,7 +1095,7 @@ const GolfTournamentSystem = () => {
                       </div>
                     ))}
                   </div>
-                  {Object.keys(trackmanMappings).length === 0 && (
+                  {supabasePlayers.length === 0 && (
                     <div className="text-center py-8 text-gray-400">
                       No mappings configured yet. Add your first mapping above.
                     </div>
