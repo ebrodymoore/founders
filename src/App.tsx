@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 import { useSupabaseData } from './hooks/useSupabaseData';
 
 // Legacy interfaces for CSV processing
@@ -46,7 +47,8 @@ const GolfTournamentSystem = () => {
     showNotification,
     addPlayer,
     updatePlayer,
-    deletePlayer
+    deletePlayer,
+    bulkUpsertPlayers
   } = useSupabaseData();
 
   // Player mappings now handled by Supabase - use supabasePlayers instead
@@ -77,6 +79,13 @@ const GolfTournamentSystem = () => {
   const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}>>([]);
   const [showNewPlayersModal, setShowNewPlayersModal] = useState(false);
   const [pendingTournamentData, setPendingTournamentData] = useState<any>(null);
+  
+  // CSV Upload state
+  const [csvData, setCsvData] = useState<Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}>>([]);
+  const [csvPreview, setCsvPreview] = useState<Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}>>([]);
+  const [csvErrors, setCsvErrors] = useState<string[]>([]);
+  const [csvLoading, setCsvLoading] = useState(false);
+  const [showCsvPreview, setShowCsvPreview] = useState(false);
   // Use Supabase notification system
   const notification = supabaseNotification;
 
@@ -115,6 +124,116 @@ const GolfTournamentSystem = () => {
     } catch (error) {
       // Error already handled by the hook
     }
+  };
+
+  // CSV Upload Functions
+  const handleCsvFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      parseCsvFile(file);
+    } else {
+      showNotification('Please select a valid CSV file', 'error');
+    }
+  };
+
+  const parseCsvFile = (file: File) => {
+    setCsvLoading(true);
+    setCsvErrors([]);
+    
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const errors: string[] = [];
+        const validData: Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}> = [];
+        
+        // Check for required headers
+        const requiredHeaders = ['trackman_id', 'display_name', 'club'];
+        const headers = results.meta.fields || [];
+        const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+        
+        if (missingHeaders.length > 0) {
+          errors.push(`Missing required columns: ${missingHeaders.join(', ')}`);
+        } else {
+          // Validate each row
+          results.data.forEach((row: any, index: number) => {
+            const rowNum = index + 2; // +2 because index starts at 0 and we have headers
+            
+            if (!row.trackman_id?.trim()) {
+              errors.push(`Row ${rowNum}: trackman_id is required`);
+            }
+            if (!row.display_name?.trim()) {
+              errors.push(`Row ${rowNum}: display_name is required`);
+            }
+            if (!row.club?.trim()) {
+              errors.push(`Row ${rowNum}: club is required`);
+            } else if (row.club !== 'Sylvan' && row.club !== '8th') {
+              errors.push(`Row ${rowNum}: club must be either 'Sylvan' or '8th', got '${row.club}'`);
+            }
+            
+            // If row is valid, add to validData
+            if (row.trackman_id?.trim() && row.display_name?.trim() && 
+                (row.club === 'Sylvan' || row.club === '8th')) {
+              validData.push({
+                trackman_id: row.trackman_id.trim(),
+                display_name: row.display_name.trim(),
+                club: row.club as 'Sylvan' | '8th'
+              });
+            }
+          });
+        }
+        
+        setCsvErrors(errors);
+        setCsvData(validData);
+        setCsvPreview(validData.slice(0, 10)); // Show first 10 rows as preview
+        setShowCsvPreview(validData.length > 0);
+        setCsvLoading(false);
+        
+        if (errors.length > 0) {
+          showNotification(`CSV parsing completed with ${errors.length} error(s)`, 'error');
+        } else {
+          showNotification(`CSV parsed successfully: ${validData.length} valid records found`, 'success');
+        }
+      },
+      error: (error) => {
+        setCsvLoading(false);
+        setCsvErrors([`Failed to parse CSV: ${error.message}`]);
+        showNotification('Failed to parse CSV file', 'error');
+      }
+    });
+  };
+
+  const uploadCsvData = async () => {
+    if (csvData.length === 0) {
+      showNotification('No valid data to upload', 'error');
+      return;
+    }
+    
+    setCsvLoading(true);
+    try {
+      await bulkUpsertPlayers(csvData);
+      // Reset CSV state after successful upload
+      setCsvData([]);
+      setCsvPreview([]);
+      setCsvErrors([]);
+      setShowCsvPreview(false);
+      // Clear file input
+      const fileInput = document.getElementById('csv-upload') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    } catch (error) {
+      // Error already handled by the hook
+    } finally {
+      setCsvLoading(false);
+    }
+  };
+
+  const clearCsvData = () => {
+    setCsvData([]);
+    setCsvPreview([]);
+    setCsvErrors([]);
+    setShowCsvPreview(false);
+    const fileInput = document.getElementById('csv-upload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   // Function to get player info from Trackman ID using Supabase
@@ -1431,6 +1550,118 @@ const GolfTournamentSystem = () => {
                         Add
                       </button>
                     </div>
+                  </div>
+                </div>
+
+                {/* CSV Upload Section */}
+                <div className="mb-8">
+                  <h4 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <FileSpreadsheet className="text-emerald-400" size={24} />
+                    Bulk Upload from CSV
+                  </h4>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                    <div className="mb-4">
+                      <p className="text-gray-300 text-sm mb-3">
+                        Upload a CSV file with columns: <code className="bg-white/10 px-2 py-1 rounded text-emerald-400">trackman_id</code>, <code className="bg-white/10 px-2 py-1 rounded text-emerald-400">display_name</code>, <code className="bg-white/10 px-2 py-1 rounded text-emerald-400">club</code>
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        Club values must be either 'Sylvan' or '8th'. Existing players will be updated with new information.
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-12 gap-4 items-end mb-4">
+                      <div className="col-span-8">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Select CSV File</label>
+                        <input
+                          id="csv-upload"
+                          type="file"
+                          accept=".csv"
+                          onChange={handleCsvFileChange}
+                          className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600"
+                        />
+                      </div>
+                      <div className="col-span-4 flex gap-2">
+                        <button
+                          onClick={uploadCsvData}
+                          disabled={csvLoading || csvData.length === 0 || csvErrors.length > 0}
+                          className="flex-1 px-4 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {csvLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={16} />
+                              Upload
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={clearCsvData}
+                          className="px-4 py-4 bg-white/10 backdrop-blur-sm text-gray-300 rounded-xl hover:bg-white/20 border border-white/20 transition-all duration-300 font-semibold"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Error Display */}
+                    {csvErrors.length > 0 && (
+                      <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                        <h5 className="text-red-400 font-semibold mb-2 flex items-center gap-2">
+                          <X size={16} />
+                          Validation Errors ({csvErrors.length})
+                        </h5>
+                        <div className="text-red-300 text-sm space-y-1 max-h-32 overflow-y-auto">
+                          {csvErrors.slice(0, 10).map((error, index) => (
+                            <div key={index}>• {error}</div>
+                          ))}
+                          {csvErrors.length > 10 && (
+                            <div className="text-red-400 font-medium">... and {csvErrors.length - 10} more errors</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Preview Data */}
+                    {showCsvPreview && csvPreview.length > 0 && (
+                      <div className="mb-4">
+                        <h5 className="text-white font-semibold mb-3 flex items-center gap-2">
+                          <Target size={16} />
+                          Preview ({csvData.length} total records)
+                        </h5>
+                        <div className="bg-white/5 rounded-lg overflow-hidden">
+                          <div className="grid grid-cols-12 gap-4 p-3 bg-white/10 text-gray-300 text-sm font-medium">
+                            <div className="col-span-4">Trackman ID</div>
+                            <div className="col-span-5">Display Name</div>
+                            <div className="col-span-3">Club</div>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {csvPreview.map((row, index) => (
+                              <div key={index} className="grid grid-cols-12 gap-4 p-3 text-sm border-t border-white/5 hover:bg-white/5">
+                                <div className="col-span-4 text-white font-mono">{row.trackman_id}</div>
+                                <div className="col-span-5 text-gray-300">{row.display_name}</div>
+                                <div className="col-span-3">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                    row.club === 'Sylvan' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 
+                                    'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                  }`}>
+                                    {row.club}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {csvData.length > 10 && (
+                            <div className="p-3 bg-white/5 text-center text-gray-400 text-sm border-t border-white/5">
+                              ... and {csvData.length - 10} more records
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
