@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useSupabaseData } from './hooks/useSupabaseData';
-import { Player } from './lib/supabase';
 
 // Legacy interfaces for CSV processing
 interface LegacyPlayer {

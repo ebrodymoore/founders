@@ -6,7 +6,7 @@ import {
   leaderboardService,
   pointsService 
 } from '../services/supabaseService'
-import { Player, Tournament, TournamentResult, PlayerStats } from '../lib/supabase'
+import type { Player, Tournament, TournamentResult, PlayerStats } from '../lib/supabase'
 
 export const useSupabaseData = () => {
   // Loading states

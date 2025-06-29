@@ -1,4 +1,5 @@
-import { supabase, Player, Tournament, TournamentResult, PlayerStats } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
+import type { Player, Tournament, TournamentResult, PlayerStats } from '../lib/supabase'
 
 // Player services
 export const playerService = {

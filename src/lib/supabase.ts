@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'YOUR_SUPABAS
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Database types for TypeScript
-export interface Player {
+export type Player = {
   id: string
   trackman_id: string
   display_name: string
@@ -15,7 +15,7 @@ export interface Player {
   created_at: string
 }
 
-export interface Tournament {
+export type Tournament = {
   id: string
   name: string
   date: string
@@ -24,7 +24,7 @@ export interface Tournament {
   created_at: string
 }
 
-export interface TournamentResult {
+export type TournamentResult = {
   id: string
   tournament_id: string
   player_id: string
@@ -41,7 +41,7 @@ export interface TournamentResult {
 }
 
 // Expanded result type for leaderboards
-export interface PlayerStats {
+export type PlayerStats = {
   id: string
   trackman_id: string
   display_name: string
