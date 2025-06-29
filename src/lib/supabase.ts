@@ -1,8 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Replace these with your actual Supabase project credentials
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://gncekrblukrevvaojnft.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduY2VrcmJsdWtyZXZ2YW9qbmZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExOTgyMjEsImV4cCI6MjA2Njc3NDIyMX0.Ie_zRvrDwITEAOHGEpeoXXByuxPBtch4fjwaP6LbM5U'
+// Environment variables - will be set in Vercel dashboard
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your Vercel dashboard.')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
