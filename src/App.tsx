@@ -74,6 +74,9 @@ const GolfTournamentSystem = () => {
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
   const [showMappings, setShowMappings] = useState(false);
   const [newMapping, setNewMapping] = useState({ trackmanId: '', name: '', club: 'Sylvan' });
+  const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string}>>([]);
+  const [showNewPlayersModal, setShowNewPlayersModal] = useState(false);
+  const [pendingTournamentData, setPendingTournamentData] = useState<any>(null);
   // Use Supabase notification system
   const notification = supabaseNotification;
 
@@ -122,6 +125,64 @@ const GolfTournamentSystem = () => {
     }
     // Fallback: use the trackmanId as the name if no mapping exists
     return { name: trackmanId, club: 'Unknown' };
+  };
+
+  // Function to detect new players in uploaded tournament data
+  const detectNewPlayers = (players: any[]): Array<{trackmanId: string, suggestedName: string}> => {
+    const newPlayers: Array<{trackmanId: string, suggestedName: string}> = [];
+    
+    players.forEach(player => {
+      const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
+      
+      // Skip if trackmanId is 'Unknown' or empty
+      if (!trackmanId || trackmanId === 'Unknown') return;
+      
+      // Check if player already exists in Supabase
+      const existingPlayer = supabasePlayers.find(p => p.trackman_id === trackmanId);
+      
+      if (!existingPlayer) {
+        // This is a new player - add to list if not already there
+        const alreadyFound = newPlayers.some(np => np.trackmanId === trackmanId);
+        if (!alreadyFound) {
+          newPlayers.push({
+            trackmanId: trackmanId,
+            suggestedName: trackmanId // Use trackmanId as suggested display name
+          });
+        }
+      }
+    });
+    
+    return newPlayers;
+  };
+
+  // Function to handle new players modal confirmation
+  const handleNewPlayersConfirm = async () => {
+    try {
+      // Add all new players to database
+      for (const newPlayer of newPlayersFound) {
+        await addPlayer(newPlayer.trackmanId, newPlayer.suggestedName, 'Sylvan'); // Default to Sylvan, admin can change later
+      }
+      
+      // Close modal and proceed with tournament upload
+      setShowNewPlayersModal(false);
+      setNewPlayersFound([]);
+      
+      // Process the pending tournament now that players are added
+      if (pendingTournamentData) {
+        await processTournamentUpload(pendingTournamentData);
+        setPendingTournamentData(null);
+      }
+    } catch (error) {
+      console.error('Error adding new players:', error);
+    }
+  };
+
+  // Function to cancel new players modal
+  const handleNewPlayersCancel = () => {
+    setShowNewPlayersModal(false);
+    setNewPlayersFound([]);
+    setPendingTournamentData(null);
+    setIsLoading(false);
   };
 
   // Function to determine event status based on current date
@@ -497,6 +558,26 @@ const GolfTournamentSystem = () => {
       setIsLoading(false);
       return;
     }
+
+    // Check for new players before processing
+    const newPlayers = detectNewPlayers(players);
+    
+    if (newPlayers.length > 0) {
+      // Store tournament data and show new players modal
+      setPendingTournamentData({ players, uploadData: { ...uploadData } });
+      setNewPlayersFound(newPlayers);
+      setShowNewPlayersModal(true);
+      // Keep loading state - will be cleared when modal is handled
+      return;
+    }
+
+    // No new players found, proceed with upload
+    await processTournamentUpload({ players, uploadData: { ...uploadData } });
+  };
+
+  // Function to process tournament upload after new players are handled
+  const processTournamentUpload = async (data: { players: any[], uploadData: any }) => {
+    const { players, uploadData: tournamentData } = data;
     
     const processedPlayers = players.map(player => {
       const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || 0);
@@ -507,7 +588,7 @@ const GolfTournamentSystem = () => {
       const finalName = playerInfo.name;
       const finalClub = playerInfo.club !== 'Unknown' ? playerInfo.club : (player.Club || player.club || player['Club Name'] || 'Unknown');
       
-      if (uploadData.format === 'Stableford') {
+      if (tournamentData.format === 'Stableford') {
         const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || 0);
         const grossStableford = netStableford - courseHandicap;
         
@@ -535,21 +616,21 @@ const GolfTournamentSystem = () => {
     });
 
     const sortedPlayers = processedPlayers.sort((a, b) => {
-      if (uploadData.format === 'Stableford') {
+      if (tournamentData.format === 'Stableford') {
         return b.net - a.net;
       } else {
         return a.net - b.net;
       }
     });
 
-    const finalPlayers = handleTies(sortedPlayers, uploadData.type, uploadData.format);
+    const finalPlayers = handleTies(sortedPlayers, tournamentData.type, tournamentData.format);
 
     const newTournament: Tournament = {
       id: Date.now(),
-      name: uploadData.name,
-      date: uploadData.date,
-      type: uploadData.type,
-      format: uploadData.format,
+      name: tournamentData.name,
+      date: tournamentData.date,
+      type: tournamentData.type,
+      format: tournamentData.format,
       players: finalPlayers
     };
 
@@ -1632,6 +1713,86 @@ const GolfTournamentSystem = () => {
               <Lock className="inline mr-3" size={24} />
               Admin Access
             </button>
+          </div>
+        )}
+
+        {/* New Players Modal */}
+        {showNewPlayersModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <Users className="text-emerald-400" size={32} />
+                  New Players Detected
+                </h2>
+                <button
+                  onClick={handleNewPlayersCancel}
+                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-300 text-lg leading-relaxed">
+                  The following TrackmanIDs were found in the uploaded tournament but don't exist in the database yet. 
+                  Please review and confirm the display names for these new players:
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {newPlayersFound.map((newPlayer, index) => (
+                  <div key={newPlayer.trackmanId} className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-4">
+                        <div className="text-gray-400 text-sm mb-2">TrackmanID (from upload)</div>
+                        <div className="text-white font-mono bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600">
+                          {newPlayer.trackmanId}
+                        </div>
+                      </div>
+                      <div className="col-span-1 text-center">
+                        <div className="text-gray-400">→</div>
+                      </div>
+                      <div className="col-span-4">
+                        <div className="text-gray-400 text-sm mb-2">Display Name</div>
+                        <input
+                          type="text"
+                          value={newPlayer.suggestedName}
+                          onChange={(e) => {
+                            const updatedPlayers = [...newPlayersFound];
+                            updatedPlayers[index].suggestedName = e.target.value;
+                            setNewPlayersFound(updatedPlayers);
+                          }}
+                          className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                          placeholder="Enter display name..."
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <div className="text-gray-400 text-sm mb-2">Default Club</div>
+                        <div className="text-gray-300 text-sm">
+                          Will be set to <span className="text-emerald-400 font-semibold">Sylvan</span> (can be changed later)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={handleNewPlayersCancel}
+                  className="px-6 py-3 rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all duration-300"
+                >
+                  Cancel Upload
+                </button>
+                <button
+                  onClick={handleNewPlayersConfirm}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/25"
+                >
+                  Add Players & Continue Upload
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
