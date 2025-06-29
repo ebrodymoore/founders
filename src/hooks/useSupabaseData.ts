@@ -100,6 +100,27 @@ export const useSupabaseData = () => {
     }
   }, [handleError, showNotification])
 
+  const bulkUpsertPlayers = useCallback(async (playersData: Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}>) => {
+    try {
+      const upsertedPlayers = await playerService.upsertBulk(playersData)
+      
+      // Update local state by merging upserted players
+      setPlayers(prev => {
+        const playerMap = new Map(prev.map(p => [p.trackman_id, p]))
+        upsertedPlayers.forEach(player => {
+          playerMap.set(player.trackman_id, player)
+        })
+        return Array.from(playerMap.values())
+      })
+      
+      showNotification(`${upsertedPlayers.length} players updated/added from CSV`, 'success')
+      return upsertedPlayers
+    } catch (error) {
+      handleError(error, 'bulkUpsertPlayers')
+      throw error
+    }
+  }, [handleError, showNotification])
+
   // Tournament operations
   const addTournament = useCallback(async (tournamentData: Omit<Tournament, 'id' | 'created_at'>) => {
     try {
@@ -221,6 +242,7 @@ export const useSupabaseData = () => {
     addPlayer,
     updatePlayer,
     deletePlayer,
+    bulkUpsertPlayers,
     addTournament,
     uploadTournamentWithResults,
     getTournamentResults,

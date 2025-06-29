@@ -1253,6 +1253,17 @@ const GolfTournamentSystem = () => {
               <Calendar className="inline mr-3" size={24} />
               Tournament Hub
             </button>
+            <button
+              onClick={() => setActiveTab('about')}
+              className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                activeTab === 'about'
+                  ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
+                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
+              }`}
+            >
+              <FileText className="inline mr-3" size={24} />
+              About
+            </button>
             {isAdmin && (
               <div className="flex gap-3">
                 <button
@@ -2241,6 +2252,111 @@ const GolfTournamentSystem = () => {
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'about' && (
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+              <div className="mb-8 animate-in fade-in-0 duration-1000">
+                <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                  <FileText className="text-emerald-400" size={32} />
+                  About Founders Series
+                </h2>
+                <p className="text-gray-300">A summer long race to the championship</p>
+              </div>
+
+              <div className="space-y-8">
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Trophy className="text-yellow-400" size={28} />
+                    What is it?
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed mb-4 text-lg">
+                    A summer long race to the championship and a chance for members to compete, play, hangout, and win.
+                  </p>
+                  <p className="text-gray-300 leading-relaxed mb-4 text-lg">
+                    Show up, play well, and you'll climb the leaderboard, make the Founders Cup team, qualify for the playoffs and win cash.
+                  </p>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    We've designed 23 tournaments to offer the low, mid and high handicapper the chance to win.
+                  </p>
+                </div>
+
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Users className="text-red-400" size={24} />
+                    FOUNDERS CUP
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    A Ryder Cup event pitting Sylvan against 8th ave.
+                    The top 4 gross and top 4 net players from each clubhouse will face off in a battle to crown the best clubhouse.
+                  </p>
+                </div>
+
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Target className="text-green-400" size={24} />
+                    THE PLAYOFF
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    An outdoor 18 hole shootout at The Golf Club of TN. The top 3 players on the gross and the top 3 players on the net leaderboard play for a chance at the Founders Series championship and $1,000
+                  </p>
+                </div>
+
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    <span className="text-green-400">💰</span>
+                    How much?
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-6">
+                      <h4 className="text-xl font-bold text-white mb-4 text-center">FOUNDRY CLUB</h4>
+                      <ul className="text-gray-300 space-y-3 mb-6">
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-1">✓</span>
+                          All events included
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-1">✓</span>
+                          4 Free Guest hours ($100 value)
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-1">✓</span>
+                          Sick Foundry Tee
+                        </li>
+                      </ul>
+                      <div className="text-center">
+                        <button className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105">
+                          Register (40 available)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
+                      <h4 className="text-xl font-bold text-white mb-4 text-center">Without Foundry Club</h4>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
+                          <span className="text-gray-300">MAJORS</span>
+                          <span className="text-white font-bold">$35/event</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
+                          <span className="text-gray-300">TOUR</span>
+                          <span className="text-white font-bold">$25/event</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
+                          <span className="text-gray-300">LEAGUE</span>
+                          <span className="text-white font-bold">$5/event</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
+                          <span className="text-gray-300">SUPR CLUB</span>
+                          <span className="text-white font-bold">$0/event</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

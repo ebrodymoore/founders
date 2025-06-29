@@ -2,7 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 
 // Environment variables - will be set in Vercel dashboard
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.replace(/[\r\n\t\s]/g, '')
+
+// Debug: Check for invalid characters in the token
+if (supabaseAnonKey && /[\r\n\t]/.test(supabaseAnonKey)) {
+  console.error('Invalid characters found in SUPABASE_ANON_KEY')
+}
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your Vercel dashboard.')

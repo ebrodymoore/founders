@@ -75,6 +75,28 @@ export const playerService = {
     }
     
     return player!
+  },
+
+  // Bulk create players
+  async createBulk(players: Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}>): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from('players')
+      .insert(players)
+      .select()
+    
+    if (error) throw error
+    return data || []
+  },
+
+  // Bulk upsert players (insert or update if exists)
+  async upsertBulk(players: Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}>): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from('players')
+      .upsert(players, { onConflict: 'trackman_id' })
+      .select()
+    
+    if (error) throw error
+    return data || []
   }
 }
 
