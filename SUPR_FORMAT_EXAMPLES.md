@@ -1,18 +1,20 @@
-# SUPR Event Format Examples
+# SUPR & League Event Format Examples
 
-This document shows examples of various spreadsheet formats that the SUPR parsing system can handle.
+This document shows examples of various spreadsheet formats that the flexible parsing system can handle for SUPR and League events.
 
 ## Supported Column Header Variations
 
 ### Player Names
 - `Name`, `Player Name`, `Player`, `Display Name`, `Full Name`
-- `First Name`, `Last Name`, `Participant`, `Golfer`
+- `First Name`, `Last Name`, `Participant`, `Golfer`, `Member`
 
 ### Scores  
 - `Score`, `Total`, `Points`, `Final Score`, `Net`, `Gross`, `Result`
+- `League Score`, `Weekly Score`, `Round Score` (League events)
 
 ### Positions
 - `Position`, `Place`, `Rank`, `Pos`, `Placement`, `Finish`
+- `League Position`, `Weekly Rank` (League events)
 
 ## Example Format 1: Standard Headers
 ```csv
@@ -72,7 +74,34 @@ Place,Player Name,Final Score
 - Missing club = "Unknown" (will be mapped via player database)
 - Missing position = row number
 
+## League Event Examples
+
+### Example 6: League Night Format
+```csv
+Member,Weekly Score,League Position
+John Smith,75,1
+Jane Doe,78,2
+Bob Wilson,82,3
+```
+
+### Example 7: Simple League Format
+```csv
+Player,Round Score,Rank
+Alice Johnson,85,1
+Mike Brown,87,2
+Sarah Davis,89,3
+```
+
+### Example 8: League with Mixed Headers
+```csv
+League Position,Member Name,Total
+1,David Lee,69
+2,Amy Clark,71
+3,Ryan Hall,73
+```
+
 ### Integration
 - Works with new player detection system
 - Automatically prompts admin for display names of unknown players
 - Handles both CSV and Excel (.xlsx) files
+- **Applies to both SUPR and League events** - system automatically detects event type and uses appropriate parsing
