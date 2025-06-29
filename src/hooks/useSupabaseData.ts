@@ -165,13 +165,33 @@ export const useSupabaseData = () => {
         // Calculate points
         const points = pointsService.calculatePoints(playerData.position, tournamentData.type)
         
+        // Validate data before inserting
+        const grossScore = playerData.gross ?? 0;
+        const netScore = playerData.net ?? 0;
+        const handicap = playerData.handicap ?? 0;
+        
+        console.log('🔍 Player data validation:', {
+          trackmanId,
+          gross: playerData.gross,
+          net: playerData.net,
+          handicap: playerData.handicap,
+          grossScore,
+          netScore,
+          position: playerData.position
+        });
+        
+        if (grossScore === null || grossScore === undefined || isNaN(grossScore)) {
+          console.error('❌ Invalid gross score for player:', trackmanId, grossScore);
+          throw new Error(`Invalid gross score for player ${trackmanId}: ${grossScore}`);
+        }
+        
         results.push({
           tournament_id: tournament.id,
           player_id: player.id,
-          position: playerData.position,
-          gross_score: playerData.gross,
-          net_score: playerData.net,
-          handicap: playerData.handicap,
+          position: playerData.position || 999,
+          gross_score: grossScore,
+          net_score: netScore,
+          handicap: handicap,
           points: points,
           tied_players: playerData.tied || 1
         })

@@ -48,6 +48,7 @@ const GolfTournamentSystem = () => {
     date: '',
     type: 'Tour Event',
     format: 'Stroke Play',
+    par: 72,
     csvData: '',
     uploadMethod: 'csv'
   });
@@ -936,7 +937,7 @@ const GolfTournamentSystem = () => {
         
         if (tournamentData.format === 'Stableford') {
           const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || '0') || 0;
-          const grossStableford = Math.max(0, netStableford - courseHandicap);
+          const grossStableford = netStableford - courseHandicap;
           
           return {
             'Player Name': trackmanId,
@@ -947,8 +948,13 @@ const GolfTournamentSystem = () => {
             position: index + 1 // Will be recalculated in the service
           };
         } else {
-          const netScore = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || '0') || 0;
-          const grossScore = Math.max(0, netScore + Math.abs(courseHandicap));
+          // Score is relative to par (e.g., +2, 0, -2)
+          const scoreRelativeToPar = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || '0') || 0;
+          const par = tournamentData.par || 72;
+          
+          // Convert to actual stroke scores
+          const netScore = par + scoreRelativeToPar; // Net score (par + relative score)
+          const grossScore = netScore + Math.abs(courseHandicap); // Gross score (net + handicap)
           
           return {
             'Player Name': trackmanId,
@@ -981,7 +987,7 @@ const GolfTournamentSystem = () => {
       );
 
       // Reset form and close modal
-      setUploadData({ name: '', date: '', type: 'Tour Event', format: 'Stroke Play', csvData: '', uploadMethod: 'csv' });
+      setUploadData({ name: '', date: '', type: 'Tour Event', format: 'Stroke Play', par: 72, csvData: '', uploadMethod: 'csv' });
       setSelectedFile(null);
       setShowUpload(false);
       
@@ -1286,6 +1292,25 @@ const GolfTournamentSystem = () => {
                       </select>
                     </div>
                   </div>
+
+                  {uploadData.format === 'Stroke Play' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Course Par</label>
+                        <input
+                          type="number"
+                          min="60"
+                          max="80"
+                          value={uploadData.par}
+                          onChange={(e) => setUploadData({...uploadData, par: parseInt(e.target.value) || 72})}
+                          className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-gray-400"
+                          placeholder="Enter course par (e.g., 72)"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Typical values: 70-72 for 18 holes</p>
+                      </div>
+                      <div></div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-4">Data Input Method</label>
