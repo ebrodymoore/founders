@@ -135,7 +135,7 @@ export const useSupabaseData = () => {
         if (!player) {
           // Create new player with fallback data
           const fallbackName = trackmanId
-          player = await playerService.create(trackmanId, fallbackName, 'Unknown' as any)
+          player = await playerService.create(trackmanId, fallbackName, 'Sylvan')
         }
         
         // Calculate points

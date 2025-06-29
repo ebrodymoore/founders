@@ -71,7 +71,7 @@ export const playerService = {
     
     if (!player && fallbackName) {
       // Create new player with fallback data
-      player = await this.create(trackmanId, fallbackName, 'Unknown' as any)
+      player = await this.create(trackmanId, fallbackName, 'Sylvan')
     }
     
     return player!
