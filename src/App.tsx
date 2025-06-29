@@ -956,12 +956,25 @@ const GolfTournamentSystem = () => {
           const netScore = par + scoreRelativeToPar; // Net score (par + relative score)
           const grossScore = netScore + Math.abs(courseHandicap); // Gross score (net + handicap)
           
+          // Debug logging for problematic players
+          if (isNaN(grossScore) || isNaN(netScore)) {
+            console.error('❌ Score calculation error for player:', {
+              trackmanId,
+              scoreRelativeToPar,
+              par,
+              courseHandicap,
+              netScore,
+              grossScore,
+              originalData: player
+            });
+          }
+          
           return {
             'Player Name': trackmanId,
             name: playerInfo.name,
-            net: netScore,
-            gross: grossScore,
-            handicap: courseHandicap,
+            net: isNaN(netScore) ? 72 : netScore,
+            gross: isNaN(grossScore) ? 72 : grossScore,
+            handicap: isNaN(courseHandicap) ? 0 : courseHandicap,
             position: index + 1 // Will be recalculated in the service
           };
         }
