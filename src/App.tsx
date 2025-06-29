@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { useSupabaseData } from './hooks/useSupabaseData';
+// import { useSupabaseData } from './hooks/useSupabaseData';
 
 // Legacy interfaces for CSV processing
 interface LegacyPlayer {
@@ -16,7 +16,9 @@ interface LegacyPlayer {
   [key: string]: any;
 }
 
-interface LegacyTournament {
+
+// For backwards compatibility
+interface Tournament {
   id: number;
   name: string;
   date: string;
@@ -34,22 +36,80 @@ interface ScheduleEvent {
 }
 
 const GolfTournamentSystem = () => {
-  // Supabase data and operations
-  const {
-    players,
-    tournaments,
-    leaderboard,
-    isLoading: supabaseLoading,
-    notification: supabaseNotification,
-    showNotification,
-    loadLeaderboard,
-    addPlayer,
-    updatePlayer,
-    deletePlayer,
-    uploadTournamentWithResults,
-    getTournamentResults,
-    getPlayerDetails
-  } = useSupabaseData();
+  // For now, use local state (Supabase integration in progress)
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  
+  // Supabase data and operations (available but not fully integrated yet)
+  // Currently commented out to prevent build errors during migration
+  // const {
+  //   players: supabasePlayers,
+  //   tournaments: supabaseTournaments,
+  //   leaderboard: supabaseLeaderboard,
+  //   isLoading: supabaseLoading,
+  //   notification: supabaseNotification,
+  //   showNotification: supabaseShowNotification,
+  //   loadLeaderboard,
+  //   addPlayer,
+  //   updatePlayer,
+  //   deletePlayer,
+  //   uploadTournamentWithResults,
+  //   getTournamentResults,
+  //   getPlayerDetails
+  // } = useSupabaseData();
+
+  // Local player mappings (will be migrated to Supabase)
+  const [trackmanMappings, setTrackmanMappings] = useState<Record<string, {name: string, club: string}>>({
+    // TrackmanID → {Name, Club} mappings
+    'Andrew Walker': { name: 'Andrew Walker', club: 'Sylvan' },
+    'Andy Aupperlee': { name: 'Andy Auperlee', club: 'Sylvan' },
+    'Andy Faught': { name: 'Andy Faught', club: '8th' },
+    'Annie Hinkel': { name: 'Annie Hinkel', club: '8th' },
+    'Beau Briggs': { name: 'Beau Briggs', club: 'Sylvan' },
+    'Bill Pepping': { name: 'Bill Pepping', club: '8th' },
+    'Brian Abrahamsen': { name: 'Brian Abrahamsen', club: 'Sylvan' },
+    'Camillo77': { name: 'Camillo Colombo', club: '8th' },
+    'Chad_Mathews': { name: 'Chad Mathews', club: '8th' },
+    'Chase Brannon': { name: 'Chase Brannon', club: 'Sylvan' },
+    'Cody Larriviere': { name: 'Cody Larriviere', club: 'Sylvan' },
+    'Cort McCown': { name: 'Cort McCown', club: '8th' },
+    'Daniel Dorris': { name: 'Daniel Dorris', club: '8th' },
+    'Dan Laughlin': { name: 'Dan Laughlin', club: 'Sylvan' },
+    'Dean M. Miller': { name: 'Dean M. Miller', club: '8th' },
+    'Eric Brody-Moore': { name: 'Eric Brody-Moore', club: 'Sylvan' },
+    'Freddie Z': { name: 'Freddie Zhang', club: 'Sylvan' },
+    'Gregory Hill': { name: 'Gregory Hill', club: 'Sylvan' },
+    'GroverCollins': { name: 'Grover Collins', club: 'Sylvan' },
+    'Jack Wheeler': { name: 'Jack Wheeler', club: '8th' },
+    'Jason Broyles': { name: 'Jason Broyles', club: '8th' },
+    'Jay LeDuc': { name: 'Jay Leduc', club: 'Sylvan' },
+    'Jerry Buckmaster': { name: 'Jerry Buckmaster', club: 'Sylvan' },
+    'Jim Kiedrowski': { name: 'Jim Kiedrowski', club: 'Sylvan' },
+    'John ODonnell': { name: 'John O\'Donnell', club: '8th' },
+    'Ken Major': { name: 'Ken Major', club: 'Sylvan' },
+    'M. Trebendis': { name: 'Michael Trebendis', club: '8th' },
+    'Mark Dorris': { name: 'Mark Dorris', club: '8th' },
+    'Mark Mendoza': { name: 'Mark Mendoza', club: '8th' },
+    'MH Mills': { name: 'Matt Mills', club: '8th' },
+    'Michael J Miller': { name: 'Michael J Miller', club: '8th' },
+    'Michael Mendoza': { name: 'Michael Mendoza', club: '8th' },
+    'Mike Miles': { name: 'Mike Miles', club: '8th' },
+    'Nathan Ruff': { name: 'Nathan Ruff', club: '8th' },
+    'Nima': { name: 'Nima Hayati', club: '8th' },
+    'Patrick Dailey': { name: 'Patrick Dailey', club: 'Sylvan' },
+    'Patrick Farno': { name: 'Patrick Farno', club: 'Sylvan' },
+    'Philip L': { name: 'Philip Leisy', club: '8th' },
+    'Puzzo': { name: 'Dan Puzzo', club: 'Sylvan' },
+    'Rootae': { name: 'John Root', club: '8th' },
+    'roy clancy': { name: 'Roy Clancy', club: '8th' },
+    'Ryan Smith 323': { name: 'Ryan Smith', club: 'Sylvan' },
+    'Sam Herb': { name: 'Sam Herb', club: '8th' },
+    'Tate Kloeppel': { name: 'Tate Kloeppel', club: 'Sylvan' },
+    'Tony Niknejad': { name: 'Tony Niknejad', club: 'Sylvan' },
+    'Tucker Moore': { name: 'Tucker Moore', club: 'Sylvan' },
+    'Tyler Ricker': { name: 'Tyler Ricker', club: 'Sylvan' },
+    'Weller Emmons': { name: 'Weller Emmons', club: 'Sylvan' },
+    'zandersteele': { name: 'Zander Steele', club: 'Sylvan' }
+  });
 
   // UI state
   const [selectedTournament, setSelectedTournament] = useState('');
@@ -74,9 +134,13 @@ const GolfTournamentSystem = () => {
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
   const [showMappings, setShowMappings] = useState(false);
   const [newMapping, setNewMapping] = useState({ trackmanId: '', name: '', club: 'Sylvan' });
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  // Use Supabase notification
-  const notification = supabaseNotification;
+  // Show notification helper
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   // Handle opening player details modal
   const handlePlayerClick = (player: any) => {
@@ -84,35 +148,47 @@ const GolfTournamentSystem = () => {
     setShowPlayerDetails(true);
   };
 
-  // Functions to manage Trackman mappings (now using Supabase)
-  const addMapping = async () => {
+  // Functions to manage Trackman mappings
+  const addMapping = () => {
     if (newMapping.trackmanId.trim() && newMapping.name.trim()) {
-      try {
-        await addPlayer(newMapping.trackmanId.trim(), newMapping.name.trim(), newMapping.club as 'Sylvan' | '8th');
-        setNewMapping({ trackmanId: '', name: '', club: 'Sylvan' });
-      } catch (error) {
-        // Error already handled by the hook
-      }
-    }
-  };
-
-  const deleteMapping = async (playerId: string) => {
-    try {
-      await deletePlayer(playerId);
-    } catch (error) {
-      // Error already handled by the hook
-    }
-  };
-
-  const updateMapping = async (playerId: string, newName: string, newClub: string) => {
-    try {
-      await updatePlayer(playerId, { 
-        display_name: newName, 
-        club: newClub as 'Sylvan' | '8th' 
+      setTrackmanMappings({
+        ...trackmanMappings,
+        [newMapping.trackmanId.trim()]: {
+          name: newMapping.name.trim(),
+          club: newMapping.club
+        }
       });
-    } catch (error) {
-      // Error already handled by the hook
+      setNewMapping({ trackmanId: '', name: '', club: 'Sylvan' });
+      showNotification(`Mapping added: ${newMapping.trackmanId} → ${newMapping.name} (${newMapping.club})`, 'success');
     }
+  };
+
+  const deleteMapping = (trackmanId: string) => {
+    const updatedMappings = { ...trackmanMappings };
+    delete updatedMappings[trackmanId];
+    setTrackmanMappings(updatedMappings);
+    showNotification(`Mapping deleted: ${trackmanId}`, 'success');
+  };
+
+  const updateMapping = (trackmanId: string, newName: string, newClub: string) => {
+    setTrackmanMappings({
+      ...trackmanMappings,
+      [trackmanId]: {
+        name: newName,
+        club: newClub
+      }
+    });
+    showNotification(`Mapping updated: ${trackmanId} → ${newName} (${newClub})`, 'success');
+  };
+
+  // Function to get player info from Trackman ID
+  const getPlayerFromTrackmanId = (trackmanId: string): {name: string, club: string} => {
+    const mapping = trackmanMappings[trackmanId];
+    if (mapping) {
+      return mapping;
+    }
+    // Fallback: use the trackmanId as the name if no mapping exists
+    return { name: trackmanId, club: 'Unknown' };
   };
 
   // Function to determine event status based on current date
