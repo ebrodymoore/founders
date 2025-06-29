@@ -1,32 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { useSupabaseData } from './hooks/useSupabaseData';
 
-// Legacy interfaces for CSV processing
-interface LegacyPlayer {
-  name: string;
-  club: string;
-  net: number;
-  gross: number;
-  handicap: number;
-  position: number;
-  points: number;
-  tied?: number;
-  [key: string]: any;
-}
 
 
-// For backwards compatibility
-interface Tournament {
-  id: number;
-  name: string;
-  date: string;
-  type: string;
-  format: string;
-  players: LegacyPlayer[];
-}
 
 interface ScheduleEvent {
   date: string;
@@ -37,18 +16,20 @@ interface ScheduleEvent {
 }
 
 const GolfTournamentSystem = () => {
-  // For now, use local state for tournaments (will migrate to Supabase next)
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  
   // Supabase data and operations
   const {
     players: supabasePlayers,
+    tournaments: supabaseTournaments,
+    leaderboard: supabaseLeaderboard,
     notification: supabaseNotification,
     showNotification,
     addPlayer,
     updatePlayer,
     deletePlayer,
-    bulkUpsertPlayers
+    bulkUpsertPlayers,
+    uploadTournamentWithResults,
+    getTournamentResults,
+    loadLeaderboard
   } = useSupabaseData();
 
   // Player mappings now handled by Supabase - use supabasePlayers instead
@@ -86,6 +67,7 @@ const GolfTournamentSystem = () => {
   const [csvErrors, setCsvErrors] = useState<string[]>([]);
   const [csvLoading, setCsvLoading] = useState(false);
   const [showCsvPreview, setShowCsvPreview] = useState(false);
+  const [tournamentResults, setTournamentResults] = useState<any[]>([]);
   // Use Supabase notification system
   const notification = supabaseNotification;
 
@@ -843,74 +825,7 @@ const GolfTournamentSystem = () => {
     }
   };
 
-  const handleTies = (sortedPlayers: any[], tournamentType: string, format: string) => {
-    const groups: any[][] = [];
-    let currentGroup: any[] = [];
-    let currentScore: number | null = null;
 
-    sortedPlayers.forEach((player: any) => {
-      const score = format === 'Stableford' ? player.net : (player.net || player.Score || 0);
-      if (currentScore === null || score === currentScore) {
-        currentGroup.push(player);
-        currentScore = score;
-      } else {
-        if (currentGroup.length > 0) {
-          groups.push([...currentGroup]);
-        }
-        currentGroup = [player];
-        currentScore = score;
-      }
-    });
-    
-    if (currentGroup.length > 0) {
-      groups.push(currentGroup);
-    }
-
-    let currentPosition = 1;
-    const processedPlayers: any[] = [];
-
-    groups.forEach(group => {
-      if (group.length === 1) {
-        const player = group[0];
-        const points = calculatePoints(currentPosition, tournamentType);
-        processedPlayers.push({
-          ...player,
-          position: currentPosition,
-          points: points
-        });
-        currentPosition++;
-      } else {
-        const tiedPositions = [];
-        for (let i = 0; i < group.length; i++) {
-          tiedPositions.push(currentPosition + i);
-        }
-        
-        const totalPoints = tiedPositions.reduce((sum, pos) => {
-          return sum + calculatePoints(pos, tournamentType);
-        }, 0);
-        
-        const pointsPerPlayer = totalPoints / group.length;
-        
-        group.forEach(player => {
-          processedPlayers.push({
-            ...player,
-            position: currentPosition,
-            points: pointsPerPlayer,
-            tied: group.length
-          });
-        });
-        
-        currentPosition += group.length;
-      }
-    });
-
-    return processedPlayers;
-  };
-
-  const calculatePoints = (position: number, tournamentType: string) => {
-    const points = pointsSystem[tournamentType];
-    return points[position] || (position <= 20 ? Math.max(30 - position, 5) : 0);
-  };
 
   const handleUpload = async () => {
     if (!uploadData.name || !uploadData.date) {
@@ -1008,146 +923,109 @@ const GolfTournamentSystem = () => {
   const processTournamentUpload = async (data: { players: any[], uploadData: any }) => {
     const { players, uploadData: tournamentData } = data;
     
-    const processedPlayers = players.map(player => {
-      const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || 0);
+    try {
+      setIsLoading(true);
       
-      // Try to get player info from Trackman mappings first, then fall back to provided data
-      const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
-      const playerInfo = getPlayerFromTrackmanId(trackmanId);
-      const finalName = playerInfo.name;
-      const finalClub = playerInfo.club !== 'Unknown' ? playerInfo.club : (player.Club || player.club || player['Club Name'] || 'Unknown');
-      
-      if (tournamentData.format === 'Stableford') {
-        const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || 0);
-        const grossStableford = netStableford - courseHandicap;
+      // Process players data for Supabase upload
+      const processedPlayers = players.map((player, index) => {
+        const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || 0);
         
-        return {
-          ...player,
-          name: finalName,
-          net: netStableford,
-          gross: grossStableford,
-          handicap: courseHandicap,
-          club: finalClub
-        };
-      } else {
-        const netScore = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || 0);
-        const grossScore = netScore + Math.abs(courseHandicap);
+        // Try to get player info from Trackman mappings first, then fall back to provided data
+        const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
+        const playerInfo = getPlayerFromTrackmanId(trackmanId);
         
-        return {
-          ...player,
-          name: finalName,
-          net: netScore,
-          gross: grossScore,
-          handicap: courseHandicap,
-          club: finalClub
-        };
-      }
-    });
-
-    const sortedPlayers = processedPlayers.sort((a, b) => {
-      if (tournamentData.format === 'Stableford') {
-        return b.net - a.net;
-      } else {
-        return a.net - b.net;
-      }
-    });
-
-    const finalPlayers = handleTies(sortedPlayers, tournamentData.type, tournamentData.format);
-
-    const newTournament: Tournament = {
-      id: Date.now(),
-      name: tournamentData.name,
-      date: tournamentData.date,
-      type: tournamentData.type,
-      format: tournamentData.format,
-      players: finalPlayers
-    };
-
-    setTournaments([...tournaments, newTournament]);
-    setUploadData({ name: '', date: '', type: 'Tour Event', format: 'Stroke Play', csvData: '', uploadMethod: 'csv' });
-    setSelectedFile(null);
-    setShowUpload(false);
-    setIsLoading(false);
-    showNotification(`Tournament "${newTournament.name}" uploaded successfully!`, 'success');
-  };
-
-  const generateLeaderboard = (type: string) => {
-    const playerStats: Record<string, any> = {};
-    
-    tournaments.forEach(tournament => {
-      tournament.players.forEach((player: any) => {
-        // Use the standardized name field from processed players
-        const name = player.name || player.Name || player['Player Name'] || 'Unknown';
-        const club = player.club || player.Club || player['Club Name'] || 'Unknown';
-        
-        // Filter by club if a specific club is selected
-        if (selectedClub !== 'all' && club !== selectedClub) {
-          return;
-        }
-        
-        if (!playerStats[name]) {
-          playerStats[name] = {
-            name,
-            club,
-            allEvents: [], // Store all tournament results for this player
-            bestFinish: Infinity
+        if (tournamentData.format === 'Stableford') {
+          const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || 0);
+          const grossStableford = netStableford - courseHandicap;
+          
+          return {
+            'Player Name': trackmanId,
+            name: playerInfo.name,
+            net: netStableford,
+            gross: grossStableford,
+            handicap: courseHandicap,
+            position: index + 1 // Will be recalculated in the service
+          };
+        } else {
+          const netScore = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || 0);
+          const grossScore = netScore + Math.abs(courseHandicap);
+          
+          return {
+            'Player Name': trackmanId,
+            name: playerInfo.name,
+            net: netScore,
+            gross: grossScore,
+            handicap: courseHandicap,
+            position: index + 1 // Will be recalculated in the service
           };
         }
-        
-        // Add this tournament result to the player's event history
-        playerStats[name].allEvents.push({
-          points: player.points || 0,
-          position: player.position || Infinity,
-          gross: player.gross || 0,
-          net: player.net || 0,
-          tournamentName: tournament.name,
-          tournamentDate: tournament.date
-        });
-        
-        playerStats[name].bestFinish = Math.min(playerStats[name].bestFinish, player.position || Infinity);
-      });
-    });
-
-    // Process each player's results to get top 8 events and calculate stats
-    Object.values(playerStats).forEach((player: any) => {
-      // Sort events by points (highest first) and take top 8
-      const sortedEvents = player.allEvents.sort((a: any, b: any) => b.points - a.points);
-      const top8Events = sortedEvents.slice(0, 8);
-      
-      // Calculate stats based on top 8 events
-      player.totalPoints = top8Events.reduce((sum: number, event: any) => sum + event.points, 0);
-      player.countingEvents = top8Events.length;
-      player.totalEvents = player.allEvents.length;
-      
-      if (top8Events.length > 0) {
-        player.avgGross = Math.round(top8Events.reduce((sum: number, event: any) => sum + event.gross, 0) / top8Events.length);
-        player.avgNet = Math.round(top8Events.reduce((sum: number, event: any) => sum + event.net, 0) / top8Events.length);
-      } else {
-        player.avgGross = 0;
-        player.avgNet = 0;
-      }
-    });
-
-    const sortedPlayers = Object.values(playerStats)
-      .filter((player: any) => player.countingEvents > 0) // Only include players with at least one event
-      .sort((a: any, b: any) => {
-        // Primary sort by total points (highest first)
-        if (b.totalPoints !== a.totalPoints) {
-          return b.totalPoints - a.totalPoints;
-        }
-        
-        // Secondary sort by average score (lower is better)
-        if (type === 'net') {
-          return a.avgNet - b.avgNet;
-        } else {
-          return a.avgGross - b.avgGross;
-        }
       });
 
-    return sortedPlayers;
+      // Use Supabase service to upload tournament with results
+      await uploadTournamentWithResults(
+        {
+          name: tournamentData.name,
+          date: tournamentData.date,
+          type: tournamentData.type as 'Major' | 'Tour Event' | 'League' | 'SUPR',
+          format: tournamentData.format as 'Stroke Play' | 'Stableford'
+        },
+        processedPlayers
+      );
+
+      // Reset form and close modal
+      setUploadData({ name: '', date: '', type: 'Tour Event', format: 'Stroke Play', csvData: '', uploadMethod: 'csv' });
+      setSelectedFile(null);
+      setShowUpload(false);
+      
+    } catch (error) {
+      console.error('Error uploading tournament:', error);
+      showNotification('Failed to upload tournament. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const selectedTournamentData = tournaments.find(t => t.id === parseInt(selectedTournament));
+  // Get filtered leaderboard data from Supabase and adapt for UI
+  const getFilteredLeaderboard = () => {
+    if (!supabaseLeaderboard) return [];
+    
+    // Filter by club if needed
+    let filteredData = supabaseLeaderboard;
+    if (selectedClub !== 'all') {
+      filteredData = supabaseLeaderboard.filter(player => player.club === selectedClub);
+    }
+    
+    // Adapt field names for UI compatibility
+    return filteredData.map(player => ({
+      ...player,
+      name: player.display_name, // Map display_name to name for UI
+      totalPoints: player.total_points,
+      countingEvents: player.counting_events,
+      totalEvents: player.total_events,
+      avgGross: player.avg_gross,
+      avgNet: player.avg_net,
+      bestFinish: player.best_finish,
+      allEvents: player.all_events
+    }));
+  };
+
+  // Load leaderboard when club filter changes
+  useEffect(() => {
+    loadLeaderboard(selectedClub === 'all' ? 'all' : selectedClub as 'Sylvan' | '8th');
+  }, [selectedClub, loadLeaderboard]);
+
+  const selectedTournamentData = supabaseTournaments.find(t => t.id === selectedTournament);
+
+  // Load tournament results when a tournament is selected
+  useEffect(() => {
+    if (selectedTournament && selectedTournamentData) {
+      getTournamentResults(selectedTournament).then(results => {
+        setTournamentResults(results);
+      });
+    } else {
+      setTournamentResults([]);
+    }
+  }, [selectedTournament, selectedTournamentData, getTournamentResults]);
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="text-yellow-500 drop-shadow-lg" size={20} />;
@@ -2017,7 +1895,7 @@ const GolfTournamentSystem = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {generateLeaderboard(leaderboardType).map((player: any, index) => (
+                    {getFilteredLeaderboard().map((player: any, index) => (
                       <tr key={player.name} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
                         index <= 2 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                       }`} style={{animationDelay: `${index * 100}ms`}}>
@@ -2042,7 +1920,7 @@ const GolfTournamentSystem = () => {
                               className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300 hover:underline cursor-pointer text-left"
                             >
                               {player.name}
-                              {isPlayoffQualified(player, generateLeaderboard(leaderboardType)) && (
+                              {isPlayoffQualified(player, getFilteredLeaderboard()) && (
                                 <Star className="inline ml-2 text-yellow-400" size={16} />
                               )}
                             </button>
@@ -2112,7 +1990,7 @@ const GolfTournamentSystem = () => {
                     className="px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 text-white appearance-none pr-12 min-w-[300px]"
                   >
                     <option value="" className="bg-gray-800">Select a tournament</option>
-                    {tournaments.map(tournament => (
+                    {supabaseTournaments.map(tournament => (
                       <option key={tournament.id} value={tournament.id} className="bg-gray-800">
                         {tournament.name} - {tournament.date} ({tournament.format})
                       </option>
@@ -2139,17 +2017,17 @@ const GolfTournamentSystem = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <Users size={16} />
-                            <span>{selectedTournamentData.players.length} Players</span>
+                            <span>{tournamentResults.length} Players</span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-white/70 text-sm">Winner</div>
                         <div className="text-white font-bold text-xl">
-                          {selectedTournamentData.players[0]?.name || selectedTournamentData.players[0]?.Name || selectedTournamentData.players[0]?.['Player Name']}
+                          {tournamentResults[0]?.player?.display_name || 'No Results'}
                         </div>
                         <div className="text-white/90">
-                          Score: {selectedTournamentData.players[0]?.net} {selectedTournamentData.format === 'Stableford' ? 'pts' : ''}
+                          Score: {tournamentResults[0]?.net_score} {selectedTournamentData?.format === 'Stableford' ? 'pts' : ''}
                         </div>
                       </div>
                     </div>
@@ -2169,57 +2047,57 @@ const GolfTournamentSystem = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedTournamentData.players.map((player: any, index) => (
+                        {tournamentResults.map((result: any, index) => (
                           <tr key={index} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                            player.position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                            result.position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                           }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
-                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(player.position)}`}>
-                                  {player.position}
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(result.position)}`}>
+                                  {result.position}
                                 </div>
-                                {player.tied && player.tied > 1 && (
+                                {result.tied_players && result.tied_players > 1 && (
                                   <span className="text-xs text-yellow-400 bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
-                                    T{player.tied}
+                                    T{result.tied_players}
                                   </span>
                                 )}
-                                {getRankIcon(player.position)}
+                                {getRankIcon(result.position)}
                               </div>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${
-                                  player.position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
-                                  player.position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                                  player.position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
+                                  result.position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
+                                  result.position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
+                                  result.position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
                                   'bg-gradient-to-r from-blue-400 to-blue-600'
                                 }`}></div>
                                 <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
-                                  {player.name || player.Name || player['Player Name']}
+                                  {result.player?.display_name || 'Unknown Player'}
                                 </span>
                               </div>
                             </td>
                             <td className="p-4">
                               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                                player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                                result.player?.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                                result.player?.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
                                 'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                               }`}>
-                                {player.club}
+                                {result.player?.club}
                               </span>
                             </td>
-                            <td className="p-4 text-white font-medium text-lg">{player.gross}</td>
+                            <td className="p-4 text-white font-medium text-lg">{result.gross_score}</td>
                             <td className="p-4 text-emerald-400 font-medium text-lg">
-                              {player.net}{selectedTournamentData.format === 'Stableford' ? ' pts' : ''}
+                              {result.net_score}{selectedTournamentData?.format === 'Stableford' ? ' pts' : ''}
                             </td>
-                            <td className="p-4 text-gray-300">{player.handicap}</td>
+                            <td className="p-4 text-gray-300">{result.handicap}</td>
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-yellow-400 font-bold text-lg">
-                                  {typeof player.points === 'number' ? player.points.toFixed(2) : player.points}
+                                  {typeof result.points === 'number' ? result.points.toFixed(2) : result.points}
                                 </span>
                                 <span className="text-xs text-yellow-300">pts</span>
-                                {player.tied && player.tied > 1 && (
+                                {result.tied_players && result.tied_players > 1 && (
                                   <span className="text-xs text-gray-400 bg-gray-400/20 px-1 py-0.5 rounded">(split)</span>
                                 )}
                               </div>
@@ -2232,7 +2110,7 @@ const GolfTournamentSystem = () => {
                 </div>
               )}
 
-              {tournaments.length === 0 && (
+              {supabaseTournaments.length === 0 && (
                 <div className="text-center py-20 animate-in fade-in-0 duration-1000">
                   <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full mb-6 opacity-50 animate-pulse">
                     <Users className="text-white" size={40} />
