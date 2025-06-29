@@ -67,7 +67,7 @@ CREATE TRIGGER update_tournaments_updated_at BEFORE UPDATE ON tournaments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_tournament_results_updated_at BEFORE UPDATE ON tournament_results
-    FOR EACH ROW EXECUTE FUNCTION update_tournament_results_updated_at_column();
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- RLS Policies (allow all operations for now - you can restrict later)
 ALTER TABLE players ENABLE ROW LEVEL SECURITY;
