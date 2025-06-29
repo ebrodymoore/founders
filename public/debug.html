@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Netlify Deployment Debug</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // Check if we're on Netlify
+        addStatus('Current URL: ' + window.location.href);
+        addStatus('User Agent: ' + navigator.userAgent);
+        
+        // Check environment variables
+        addStatus('Checking environment variables...');
+        
+        // Test fetch to see if there are any network issues
+        fetch('/index.html')
+            .then(response => {
+                if (response.ok) {
+                    addStatus('✅ Can fetch index.html successfully', 'success');
+                } else {
+                    addStatus('❌ Failed to fetch index.html: ' + response.status, 'error');
+                }
+                return response.text();
+            })
+            .then(html => {
+                if (html.includes('React') || html.includes('Vite')) {
+                    addStatus('✅ Index.html contains React/Vite content', 'success');
+                } else {
+                    addStatus('❌ Index.html does not contain expected content', 'error');
+                }
+                
+                // Check if main.js exists
+                const scriptTags = html.match(/<script[^>]*src="[^"]*"[^>]*>/g);
+                if (scriptTags) {
+                    addStatus('✅ Found script tags: ' + scriptTags.length, 'success');
+                    scriptTags.forEach(tag => {
+                        const src = tag.match(/src="([^"]*)"/);
+                        if (src) {
+                            addStatus('Script: ' + src[1]);
+                        }
+                    });
+                } else {
+                    addStatus('❌ No script tags found in index.html', 'error');
+                }
+            })
+            .catch(error => {
+                addStatus('❌ Error fetching index.html: ' + error.message, 'error');
+            });
+        
+        // Check console for errors
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            addStatus('🚨 Console Error: ' + args.join(' '), 'error');
+            originalConsoleError.apply(console, args);
+        };
+        
+        // Check if main app div exists
+        setTimeout(() => {
+            const root = document.querySelector('#root');
+            if (root) {
+                addStatus('✅ Found #root element', 'success');
+                if (root.children.length > 0) {
+                    addStatus('✅ #root has content', 'success');
+                } else {
+                    addStatus('❌ #root is empty', 'error');
+                }
+            } else {
+                addStatus('❌ #root element not found', 'error');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
