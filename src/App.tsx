@@ -935,8 +935,8 @@ const GolfTournamentSystem = () => {
         const playerInfo = getPlayerFromTrackmanId(trackmanId);
         
         if (tournamentData.format === 'Stableford') {
-          const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || 0);
-          const grossStableford = netStableford - courseHandicap;
+          const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || '0') || 0;
+          const grossStableford = Math.max(0, netStableford - courseHandicap);
           
           return {
             'Player Name': trackmanId,
@@ -947,8 +947,8 @@ const GolfTournamentSystem = () => {
             position: index + 1 // Will be recalculated in the service
           };
         } else {
-          const netScore = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || 0);
-          const grossScore = netScore + Math.abs(courseHandicap);
+          const netScore = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || '0') || 0;
+          const grossScore = Math.max(0, netScore + Math.abs(courseHandicap));
           
           return {
             'Player Name': trackmanId,
@@ -960,6 +960,14 @@ const GolfTournamentSystem = () => {
           };
         }
       });
+
+      // Debug: Log processed players data
+      console.log('📊 Processed players data:', processedPlayers.map(p => ({
+        name: p.name,
+        net: p.net,
+        gross: p.gross,
+        handicap: p.handicap
+      })));
 
       // Use Supabase service to upload tournament with results
       await uploadTournamentWithResults(
