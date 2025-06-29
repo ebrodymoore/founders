@@ -54,74 +54,60 @@ const GolfTournamentSystem = () => {
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<any | null>(null);
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
-  const [usernameMappings, setUsernameMappings] = useState<Record<string, string>>({
-    // Trackman username to club mappings
-    'andrew walker': 'Sylvan',
-    'andy aupperlee': 'Sylvan',
-    'andy faught': '8th',
-    'annie hinkel': '8th',
-    'beau briggs': 'Sylvan',
-    'bill pepping': '8th',
-    'brian abrahamsen': 'Sylvan',
-    'camillo77': '8th',
-    'chad_mathews': '8th',
-    'chase brannon': 'Sylvan',
-    'cody larriviere': 'Sylvan',
-    'cort mccown': '8th',
-    'daniel dorris': '8th',
-    'dan laughlin': 'Sylvan',
-    'dean m. miller': '8th',
-    'eric brody-moore': 'Sylvan',
-    'freddie z': 'Sylvan',
-    'gregory hill': 'Sylvan',
-    'grovercollins': 'Sylvan',
-    'jack wheeler': '8th',
-    'jason broyles': '8th',
-    'jay leduc': 'Sylvan',
-    'jerry buckmaster': 'Sylvan',
-    'jim kiedrowski': 'Sylvan',
-    'john odonnell': '8th',
-    'ken major': 'Sylvan',
-    'm. trebendis': '8th',
-    'mark dorris': '8th',
-    'mark mendoza': '8th',
-    'mh mills': '8th',
-    'michael j miller': '8th',
-    'michael mendoza': '8th',
-    'mike miles': '8th',
-    'nathan ruff': '8th',
-    'nima': '8th',
-    'patrick dailey': 'Sylvan',
-    'patrick farno': 'Sylvan',
-    'philip l': '8th',
-    'puzzo': 'Sylvan',
-    'rootae': '8th',
-    'roy clancy': '8th',
-    'ryan smith 323': 'Sylvan',
-    'sam herb': '8th',
-    'tate kloeppel': 'Sylvan',
-    'tony niknejad': 'Sylvan',
-    'tucker moore': 'Sylvan',
-    'tyler ricker': 'Sylvan',
-    'weller emmons': 'Sylvan',
-    'zandersteele': 'Sylvan',
-    // Additional name variations that might be used
-    'camillo colombo': '8th',
-    'chad mathews': '8th',
-    'freddie zhang': 'Sylvan',
-    'grover collins': 'Sylvan',
-    'john o\'donnell': '8th',
-    'michael trebendis': '8th',
-    'matt mills': '8th',
-    'nima hayati': '8th',
-    'philip leisy': '8th',
-    'dan puzzo': 'Sylvan',
-    'john root': '8th',
-    'ryan smith': 'Sylvan',
-    'zander steele': 'Sylvan'
+  const [trackmanMappings, setTrackmanMappings] = useState<Record<string, {name: string, club: string}>>({
+    // TrackmanID → {Name, Club} mappings
+    'Andrew Walker': { name: 'Andrew Walker', club: 'Sylvan' },
+    'Andy Aupperlee': { name: 'Andy Auperlee', club: 'Sylvan' },
+    'Andy Faught': { name: 'Andy Faught', club: '8th' },
+    'Annie Hinkel': { name: 'Annie Hinkel', club: '8th' },
+    'Beau Briggs': { name: 'Beau Briggs', club: 'Sylvan' },
+    'Bill Pepping': { name: 'Bill Pepping', club: '8th' },
+    'Brian Abrahamsen': { name: 'Brian Abrahamsen', club: 'Sylvan' },
+    'Camillo77': { name: 'Camillo Colombo', club: '8th' },
+    'Chad_Mathews': { name: 'Chad Mathews', club: '8th' },
+    'Chase Brannon': { name: 'Chase Brannon', club: 'Sylvan' },
+    'Cody Larriviere': { name: 'Cody Larriviere', club: 'Sylvan' },
+    'Cort McCown': { name: 'Cort McCown', club: '8th' },
+    'Daniel Dorris': { name: 'Daniel Dorris', club: '8th' },
+    'Dan Laughlin': { name: 'Dan Laughlin', club: 'Sylvan' },
+    'Dean M. Miller': { name: 'Dean M. Miller', club: '8th' },
+    'Eric Brody-Moore': { name: 'Eric Brody-Moore', club: 'Sylvan' },
+    'Freddie Z': { name: 'Freddie Zhang', club: 'Sylvan' },
+    'Gregory Hill': { name: 'Gregory Hill', club: 'Sylvan' },
+    'GroverCollins': { name: 'Grover Collins', club: 'Sylvan' },
+    'Jack Wheeler': { name: 'Jack Wheeler', club: '8th' },
+    'Jason Broyles': { name: 'Jason Broyles', club: '8th' },
+    'Jay LeDuc': { name: 'Jay Leduc', club: 'Sylvan' },
+    'Jerry Buckmaster': { name: 'Jerry Buckmaster', club: 'Sylvan' },
+    'Jim Kiedrowski': { name: 'Jim Kiedrowski', club: 'Sylvan' },
+    'John ODonnell': { name: 'John O\'Donnell', club: '8th' },
+    'Ken Major': { name: 'Ken Major', club: 'Sylvan' },
+    'M. Trebendis': { name: 'Michael Trebendis', club: '8th' },
+    'Mark Dorris': { name: 'Mark Dorris', club: '8th' },
+    'Mark Mendoza': { name: 'Mark Mendoza', club: '8th' },
+    'MH Mills': { name: 'Matt Mills', club: '8th' },
+    'Michael J Miller': { name: 'Michael J Miller', club: '8th' },
+    'Michael Mendoza': { name: 'Michael Mendoza', club: '8th' },
+    'Mike Miles': { name: 'Mike Miles', club: '8th' },
+    'Nathan Ruff': { name: 'Nathan Ruff', club: '8th' },
+    'Nima': { name: 'Nima Hayati', club: '8th' },
+    'Patrick Dailey': { name: 'Patrick Dailey', club: 'Sylvan' },
+    'Patrick Farno': { name: 'Patrick Farno', club: 'Sylvan' },
+    'Philip L': { name: 'Philip Leisy', club: '8th' },
+    'Puzzo': { name: 'Dan Puzzo', club: 'Sylvan' },
+    'Rootae': { name: 'John Root', club: '8th' },
+    'roy clancy': { name: 'Roy Clancy', club: '8th' },
+    'Ryan Smith 323': { name: 'Ryan Smith', club: 'Sylvan' },
+    'Sam Herb': { name: 'Sam Herb', club: '8th' },
+    'Tate Kloeppel': { name: 'Tate Kloeppel', club: 'Sylvan' },
+    'Tony Niknejad': { name: 'Tony Niknejad', club: 'Sylvan' },
+    'Tucker Moore': { name: 'Tucker Moore', club: 'Sylvan' },
+    'Tyler Ricker': { name: 'Tyler Ricker', club: 'Sylvan' },
+    'Weller Emmons': { name: 'Weller Emmons', club: 'Sylvan' },
+    'zandersteele': { name: 'Zander Steele', club: 'Sylvan' }
   });
   const [showMappings, setShowMappings] = useState(false);
-  const [newMapping, setNewMapping] = useState({ username: '', club: 'Sylvan' });
+  const [newMapping, setNewMapping] = useState({ trackmanId: '', name: '', club: 'Sylvan' });
 
   // Show notification and auto-hide after 3 seconds
   const showNotification = (message: string, type: 'success' | 'error') => {
@@ -135,37 +121,47 @@ const GolfTournamentSystem = () => {
     setShowPlayerDetails(true);
   };
 
-  // Functions to manage username mappings
+  // Functions to manage Trackman mappings
   const addMapping = () => {
-    if (newMapping.username.trim()) {
-      setUsernameMappings({
-        ...usernameMappings,
-        [newMapping.username.toLowerCase().trim()]: newMapping.club
+    if (newMapping.trackmanId.trim() && newMapping.name.trim()) {
+      setTrackmanMappings({
+        ...trackmanMappings,
+        [newMapping.trackmanId.trim()]: {
+          name: newMapping.name.trim(),
+          club: newMapping.club
+        }
       });
-      setNewMapping({ username: '', club: 'Sylvan' });
-      showNotification(`Mapping added: ${newMapping.username} → ${newMapping.club}`, 'success');
+      setNewMapping({ trackmanId: '', name: '', club: 'Sylvan' });
+      showNotification(`Mapping added: ${newMapping.trackmanId} → ${newMapping.name} (${newMapping.club})`, 'success');
     }
   };
 
-  const deleteMapping = (username: string) => {
-    const updatedMappings = { ...usernameMappings };
-    delete updatedMappings[username];
-    setUsernameMappings(updatedMappings);
-    showNotification(`Mapping deleted: ${username}`, 'success');
+  const deleteMapping = (trackmanId: string) => {
+    const updatedMappings = { ...trackmanMappings };
+    delete updatedMappings[trackmanId];
+    setTrackmanMappings(updatedMappings);
+    showNotification(`Mapping deleted: ${trackmanId}`, 'success');
   };
 
-  const updateMapping = (username: string, newClub: string) => {
-    setUsernameMappings({
-      ...usernameMappings,
-      [username]: newClub
+  const updateMapping = (trackmanId: string, newName: string, newClub: string) => {
+    setTrackmanMappings({
+      ...trackmanMappings,
+      [trackmanId]: {
+        name: newName,
+        club: newClub
+      }
     });
-    showNotification(`Mapping updated: ${username} → ${newClub}`, 'success');
+    showNotification(`Mapping updated: ${trackmanId} → ${newName} (${newClub})`, 'success');
   };
 
-  // Function to get club from username mapping
-  const getClubFromUsername = (playerName: string): string => {
-    const username = playerName.toLowerCase().replace(/\s+/g, '.');
-    return usernameMappings[username] || 'Unknown';
+  // Function to get player info from Trackman ID
+  const getPlayerFromTrackmanId = (trackmanId: string): {name: string, club: string} => {
+    const mapping = trackmanMappings[trackmanId];
+    if (mapping) {
+      return mapping;
+    }
+    // Fallback: use the trackmanId as the name if no mapping exists
+    return { name: trackmanId, club: 'Unknown' };
   };
 
   // Function to determine event status based on current date
@@ -543,13 +539,13 @@ const GolfTournamentSystem = () => {
     }
     
     const processedPlayers = players.map(player => {
-      const playerName = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
       const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || 0);
       
-      // Try to get club from mappings first, then fall back to provided club data
-      const providedClub = player.Club || player.club || player['Club Name'] || 'Unknown';
-      const mappedClub = getClubFromUsername(playerName);
-      const finalClub = mappedClub !== 'Unknown' ? mappedClub : providedClub;
+      // Try to get player info from Trackman mappings first, then fall back to provided data
+      const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
+      const playerInfo = getPlayerFromTrackmanId(trackmanId);
+      const finalName = playerInfo.name;
+      const finalClub = playerInfo.club !== 'Unknown' ? playerInfo.club : (player.Club || player.club || player['Club Name'] || 'Unknown');
       
       if (uploadData.format === 'Stableford') {
         const netStableford = parseInt(player['Total'] || player.total || player['Points'] || player.points || 0);
@@ -557,7 +553,7 @@ const GolfTournamentSystem = () => {
         
         return {
           ...player,
-          name: playerName,
+          name: finalName,
           net: netStableford,
           gross: grossStableford,
           handicap: courseHandicap,
@@ -569,7 +565,7 @@ const GolfTournamentSystem = () => {
         
         return {
           ...player,
-          name: playerName,
+          name: finalName,
           net: netScore,
           gross: grossScore,
           handicap: courseHandicap,
@@ -1043,18 +1039,28 @@ const GolfTournamentSystem = () => {
 
                 <div className="mb-8">
                   <h4 className="text-xl font-bold text-white mb-4">Add New Mapping</h4>
-                  <div className="flex gap-4 items-end">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Player Name</label>
+                  <div className="grid grid-cols-12 gap-4 items-end">
+                    <div className="col-span-4">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Trackman ID</label>
                       <input
                         type="text"
-                        value={newMapping.username}
-                        onChange={(e) => setNewMapping({...newMapping, username: e.target.value})}
+                        value={newMapping.trackmanId}
+                        onChange={(e) => setNewMapping({...newMapping, trackmanId: e.target.value})}
                         className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
-                        placeholder="e.g., John Smith (will become john.smith)"
+                        placeholder="e.g., Chad_Mathews"
                       />
                     </div>
-                    <div className="w-48">
+                    <div className="col-span-4">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
+                      <input
+                        type="text"
+                        value={newMapping.name}
+                        onChange={(e) => setNewMapping({...newMapping, name: e.target.value})}
+                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                        placeholder="e.g., Chad Mathews"
+                      />
+                    </div>
+                    <div className="col-span-2">
                       <label className="block text-sm font-medium text-gray-300 mb-2">Club</label>
                       <select
                         value={newMapping.club}
@@ -1065,52 +1071,71 @@ const GolfTournamentSystem = () => {
                         <option value="8th" className="bg-gray-800">8th</option>
                       </select>
                     </div>
-                    <button
-                      onClick={addMapping}
-                      className="px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 font-semibold flex items-center gap-2"
-                    >
-                      <Plus size={20} />
-                      Add
-                    </button>
+                    <div className="col-span-2">
+                      <button
+                        onClick={addMapping}
+                        className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 font-semibold flex items-center justify-center gap-2"
+                      >
+                        <Plus size={20} />
+                        Add
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 <div>
                   <h4 className="text-xl font-bold text-white mb-4">Current Mappings</h4>
                   <div className="space-y-3">
-                    {Object.entries(usernameMappings).map(([username, club]) => (
-                      <div key={username} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="text-white font-medium">{username}</div>
-                          <div className="text-gray-400">→</div>
-                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                            club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                            club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
-                            'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
-                          }`}>
-                            {club}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={club}
-                            onChange={(e) => updateMapping(username, e.target.value)}
-                            className="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
-                          >
-                            <option value="Sylvan" className="bg-gray-800">Sylvan</option>
-                            <option value="8th" className="bg-gray-800">8th</option>
-                          </select>
-                          <button
-                            onClick={() => deleteMapping(username)}
-                            className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-400 transition-all duration-300 border border-red-500/30"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                    {Object.entries(trackmanMappings).map(([trackmanId, playerInfo]) => (
+                      <div key={trackmanId} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                        <div className="grid grid-cols-12 gap-4 items-center">
+                          <div className="col-span-3">
+                            <div className="text-gray-400 text-xs mb-1">Trackman ID</div>
+                            <div className="text-white font-medium">{trackmanId}</div>
+                          </div>
+                          <div className="col-span-1 text-center">
+                            <div className="text-gray-400">→</div>
+                          </div>
+                          <div className="col-span-4">
+                            <div className="text-gray-400 text-xs mb-1">Display Name</div>
+                            <input
+                              type="text"
+                              value={playerInfo.name}
+                              onChange={(e) => updateMapping(trackmanId, e.target.value, playerInfo.club)}
+                              className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <div className="text-gray-400 text-xs mb-1">Club</div>
+                            <select
+                              value={playerInfo.club}
+                              onChange={(e) => updateMapping(trackmanId, playerInfo.name, e.target.value)}
+                              className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
+                            >
+                              <option value="Sylvan" className="bg-gray-800">Sylvan</option>
+                              <option value="8th" className="bg-gray-800">8th</option>
+                            </select>
+                          </div>
+                          <div className="col-span-2 flex justify-end">
+                            <span className={`px-3 py-1 rounded-full text-sm font-semibold mr-2 ${
+                              playerInfo.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
+                              playerInfo.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                              'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
+                            }`}>
+                              {playerInfo.club}
+                            </span>
+                            <button
+                              onClick={() => deleteMapping(trackmanId)}
+                              className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-400 transition-all duration-300 border border-red-500/30"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  {Object.keys(usernameMappings).length === 0 && (
+                  {Object.keys(trackmanMappings).length === 0 && (
                     <div className="text-center py-8 text-gray-400">
                       No mappings configured yet. Add your first mapping above.
                     </div>
