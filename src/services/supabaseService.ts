@@ -172,7 +172,7 @@ export const tournamentResultService = {
         player:players(*)
       `)
       .eq('tournament_id', tournamentId)
-      .order('position')
+      .order('net_position')
     
     if (error) throw error
     return data || []

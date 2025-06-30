@@ -1129,6 +1129,17 @@ const GolfTournamentSystem = () => {
 
           <div className="flex flex-wrap gap-4 mb-8 justify-center animate-in fade-in-0 duration-1000 delay-500">
             <button
+              onClick={() => setActiveTab('about')}
+              className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                activeTab === 'about'
+                  ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
+                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
+              }`}
+            >
+              <FileText className="inline mr-3" size={24} />
+              About
+            </button>
+            <button
               onClick={() => setActiveTab('leaderboard')}
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'leaderboard'
@@ -1160,17 +1171,6 @@ const GolfTournamentSystem = () => {
             >
               <Calendar className="inline mr-3" size={24} />
               Tournament Hub
-            </button>
-            <button
-              onClick={() => setActiveTab('about')}
-              className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                activeTab === 'about'
-                  ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
-                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
-              }`}
-            >
-              <FileText className="inline mr-3" size={24} />
-              About
             </button>
             {isAdmin && (
               <div className="flex gap-3">
