@@ -1036,10 +1036,13 @@ const GolfTournamentSystem = () => {
     }));
   };
 
-  // Load leaderboard when club filter changes
+  // Load leaderboard when club filter or leaderboard type changes
   useEffect(() => {
-    loadLeaderboard(selectedClub === 'all' ? 'all' : selectedClub as 'Sylvan' | '8th');
-  }, [selectedClub, loadLeaderboard]);
+    loadLeaderboard(
+      selectedClub === 'all' ? 'all' : selectedClub as 'Sylvan' | '8th',
+      leaderboardType as 'gross' | 'net'
+    );
+  }, [selectedClub, leaderboardType, loadLeaderboard]);
 
   const selectedTournamentData = supabaseTournaments.find(t => t.id === selectedTournament);
 
@@ -2095,27 +2098,27 @@ const GolfTournamentSystem = () => {
                       <tbody>
                         {tournamentResults.map((result: any, index) => (
                           <tr key={index} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                            result.position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                            result.net_position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                           }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
-                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(result.position)}`}>
-                                  {result.position}
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(result.net_position)}`}>
+                                  {result.net_position}
                                 </div>
                                 {result.tied_players && result.tied_players > 1 && (
                                   <span className="text-xs text-yellow-400 bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
                                     T{result.tied_players}
                                   </span>
                                 )}
-                                {getRankIcon(result.position)}
+                                {getRankIcon(result.net_position)}
                               </div>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${
-                                  result.position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
-                                  result.position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                                  result.position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
+                                  result.net_position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
+                                  result.net_position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
+                                  result.net_position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
                                   'bg-gradient-to-r from-blue-400 to-blue-600'
                                 }`}></div>
                                 <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
@@ -2140,7 +2143,7 @@ const GolfTournamentSystem = () => {
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-yellow-400 font-bold text-lg">
-                                  {typeof result.points === 'number' ? result.points.toFixed(2) : result.points}
+                                  {typeof result.net_points === 'number' ? result.net_points.toFixed(2) : result.net_points}
                                 </span>
                                 <span className="text-xs text-yellow-300">pts</span>
                                 {result.tied_players && result.tied_players > 1 && (

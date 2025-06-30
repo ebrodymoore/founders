@@ -44,16 +44,21 @@ export type TournamentResult = {
   id: string
   tournament_id: string
   player_id: string
-  position: number
+  gross_position: number
+  net_position: number
   gross_score: number
   net_score: number
   handicap: number
-  points: number
+  gross_points: number
+  net_points: number
   tied_players: number
   created_at: string
   // Relations
   player?: Player
   tournament?: Tournament
+  // Aliased fields from queries
+  points?: number  // Will be gross_points or net_points depending on query
+  position?: number // Will be gross_position or net_position depending on query
 }
 
 // Expanded result type for leaderboards

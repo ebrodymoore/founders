@@ -253,13 +253,14 @@ export const tournamentResultService = {
 // Leaderboard services
 export const leaderboardService = {
   // Get overall leaderboard with advanced stats
-  async getOverallLeaderboard(clubFilter?: 'Sylvan' | '8th' | 'all'): Promise<PlayerStats[]> {
+  async getOverallLeaderboard(clubFilter?: 'Sylvan' | '8th' | 'all', leaderboardType?: 'gross' | 'net'): Promise<PlayerStats[]> {
+    const type = leaderboardType || 'net'; // Default to net
+    
     let query = supabase
       .from('tournament_results')
       .select(`
         player_id,
-        points,
-        position,
+        ${type === 'gross' ? 'gross_points as points, gross_position as position' : 'net_points as points, net_position as position'},
         gross_score,
         net_score,
         tournament:tournaments(name, date, type),
@@ -310,11 +311,11 @@ export const leaderboardService = {
     Object.values(playerStatsMap).forEach(player => {
       // Sort by points and take top 8
       const top8Events = player.all_events
-        .sort((a, b) => b.points - a.points)
+        .sort((a, b) => (b.points || 0) - (a.points || 0))
         .slice(0, 8)
       
       player.counting_events = top8Events.length
-      player.total_points = top8Events.reduce((sum, event) => sum + event.points, 0)
+      player.total_points = top8Events.reduce((sum, event) => sum + (event.points || 0), 0)
       
       if (top8Events.length > 0) {
         player.avg_gross = Math.round(top8Events.reduce((sum, event) => sum + event.gross_score, 0) / top8Events.length)

@@ -55,9 +55,9 @@ export const useSupabaseData = () => {
   }, [handleError])
 
   // Load leaderboard
-  const loadLeaderboard = useCallback(async (clubFilter: 'Sylvan' | '8th' | 'all' = 'all') => {
+  const loadLeaderboard = useCallback(async (clubFilter: 'Sylvan' | '8th' | 'all' = 'all', leaderboardType: 'gross' | 'net' = 'net') => {
     try {
-      const leaderboardData = await leaderboardService.getOverallLeaderboard(clubFilter)
+      const leaderboardData = await leaderboardService.getOverallLeaderboard(clubFilter, leaderboardType)
       setLeaderboard(leaderboardData)
     } catch (error) {
       handleError(error, 'loadLeaderboard')
@@ -162,8 +162,7 @@ export const useSupabaseData = () => {
           player = await playerService.create(trackmanId, fallbackName, 'Sylvan')
         }
         
-        // Calculate points
-        const points = pointsService.calculatePoints(playerData.position, tournamentData.type)
+        // Points will be calculated after positions are determined
         
         // Validate data before inserting
         const grossScore = playerData.gross ?? 0;
@@ -188,14 +187,30 @@ export const useSupabaseData = () => {
         results.push({
           tournament_id: tournament.id,
           player_id: player.id,
-          position: playerData.position || 999,
+          gross_position: 999, // Will be calculated after sorting
+          net_position: 999,   // Will be calculated after sorting
           gross_score: grossScore,
           net_score: netScore,
           handicap: handicap,
-          points: points,
+          gross_points: 0,     // Will be calculated after positions are determined
+          net_points: 0,       // Will be calculated after positions are determined
           tied_players: playerData.tied || 1
         })
       }
+      
+      // Sort by gross scores and assign gross positions/points
+      const grossSorted = [...results].sort((a, b) => a.gross_score - b.gross_score);
+      grossSorted.forEach((result, index) => {
+        result.gross_position = index + 1;
+        result.gross_points = pointsService.calculatePoints(result.gross_position, tournamentData.type);
+      });
+      
+      // Sort by net scores and assign net positions/points
+      const netSorted = [...results].sort((a, b) => a.net_score - b.net_score);
+      netSorted.forEach((result, index) => {
+        result.net_position = index + 1;
+        result.net_points = pointsService.calculatePoints(result.net_position, tournamentData.type);
+      });
       
       // Bulk insert results
       console.log('💾 Saving tournament results to database:', results.length, 'results')
@@ -206,9 +221,9 @@ export const useSupabaseData = () => {
       setTournaments(prev => [tournament, ...prev])
       console.log('🔄 Local state updated')
       
-      // Reload leaderboard
+      // Reload leaderboard (both gross and net will be available now)
       console.log('📊 Reloading leaderboard...')
-      await loadLeaderboard()
+      await loadLeaderboard('all', 'net') // Default to net leaderboard
       console.log('✅ Leaderboard reloaded')
       
       showNotification(`Tournament "${tournament.name}" uploaded successfully!`, 'success')
