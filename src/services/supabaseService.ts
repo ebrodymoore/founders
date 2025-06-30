@@ -263,8 +263,8 @@ export const leaderboardService = {
       .from('tournament_results')
       .select(`
         player_id,
-        ${pointsColumn} as points,
-        ${positionColumn} as position,
+        ${pointsColumn},
+        ${positionColumn},
         gross_score,
         net_score,
         tournament:tournaments(name, date, type),
@@ -303,12 +303,17 @@ export const leaderboardService = {
       }
       
       const playerStats = playerStatsMap[playerId]
+      const points = result[pointsColumn] || 0
+      const position = result[positionColumn] || 999
+      
       playerStats.all_events.push({
         ...result,
+        points,
+        position,
         tournament: result.tournament
       })
       playerStats.total_events++
-      playerStats.best_finish = Math.min(playerStats.best_finish, result.position)
+      playerStats.best_finish = Math.min(playerStats.best_finish, position)
     })
     
     // Calculate top 8 events and final stats
