@@ -8,8 +8,9 @@ ADD COLUMN IF NOT EXISTS net_position INTEGER DEFAULT 999,
 ADD COLUMN IF NOT EXISTS gross_points DECIMAL(6,2) DEFAULT 0,
 ADD COLUMN IF NOT EXISTS net_points DECIMAL(6,2) DEFAULT 0;
 
--- Also remove NOT NULL constraint from existing position column if it exists
+-- Also remove NOT NULL constraint from existing columns if they exist
 ALTER TABLE tournament_results ALTER COLUMN position DROP NOT NULL;
+ALTER TABLE tournament_results ALTER COLUMN points DROP NOT NULL;
 
 -- Add par column to tournaments table
 ALTER TABLE tournaments

@@ -28,6 +28,7 @@ const GolfTournamentSystem = () => {
     deletePlayer,
     bulkUpsertPlayers,
     uploadTournamentWithResults,
+    deleteTournament,
     getTournamentResults,
     loadLeaderboard
   } = useSupabaseData();
@@ -2082,6 +2083,19 @@ const GolfTournamentSystem = () => {
                         <div className="text-white/90">
                           Score: {tournamentResults[0]?.net_score} {selectedTournamentData?.format === 'Stableford' ? 'pts' : ''}
                         </div>
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete "${selectedTournamentData.name}"? This will permanently delete the tournament and all its results.`)) {
+                                deleteTournament(selectedTournamentData.id);
+                                setSelectedTournament('');
+                              }
+                            }}
+                            className="mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium shadow-lg"
+                          >
+                            Delete Tournament
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

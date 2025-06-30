@@ -280,6 +280,28 @@ export const useSupabaseData = () => {
     }
   }, [handleError])
 
+  // Delete tournament and its results
+  const deleteTournament = useCallback(async (tournamentId: string) => {
+    try {
+      // First delete all tournament results
+      await tournamentResultService.deleteByTournament(tournamentId)
+      
+      // Then delete the tournament
+      await tournamentService.delete(tournamentId)
+      
+      // Update local state
+      setTournaments(prev => prev.filter(t => t.id !== tournamentId))
+      
+      // Reload leaderboard since data has changed
+      await loadLeaderboard()
+      
+      showNotification('Tournament deleted successfully', 'success')
+    } catch (error) {
+      handleError(error, 'deleteTournament')
+      throw error
+    }
+  }, [handleError, showNotification, loadLeaderboard])
+
   // Initialize data on mount
   useEffect(() => {
     loadInitialData()
@@ -311,6 +333,7 @@ export const useSupabaseData = () => {
     deletePlayer,
     bulkUpsertPlayers,
     addTournament,
+    deleteTournament,
     uploadTournamentWithResults,
     getTournamentResults,
     getPlayerDetails,
