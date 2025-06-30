@@ -256,11 +256,15 @@ export const leaderboardService = {
   async getOverallLeaderboard(clubFilter?: 'Sylvan' | '8th' | 'all', leaderboardType?: 'gross' | 'net'): Promise<PlayerStats[]> {
     const type = leaderboardType || 'net'; // Default to net
     
+    const pointsColumn = type === 'gross' ? 'gross_points' : 'net_points'
+    const positionColumn = type === 'gross' ? 'gross_position' : 'net_position'
+    
     let query = supabase
       .from('tournament_results')
       .select(`
         player_id,
-        ${type === 'gross' ? 'gross_points as points, gross_position as position' : 'net_points as points, net_position as position'},
+        ${pointsColumn} as points,
+        ${positionColumn} as position,
         gross_score,
         net_score,
         tournament:tournaments(name, date, type),
