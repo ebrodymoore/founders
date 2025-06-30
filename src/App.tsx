@@ -928,8 +928,12 @@ const GolfTournamentSystem = () => {
       setIsLoading(true);
       
       // Process players data for Supabase upload
-      const processedPlayers = players.map((player, index) => {
-        const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || 0);
+      const processedPlayers = players.filter((player) => {
+        // Skip players with N/A scores
+        const score = player['Score'] || player['Net'] || player.net || player['Net Score'] || player['Total'] || player.total || player['Points'] || player.points;
+        return score !== 'N/A' && score !== 'n/a' && score !== 'NA' && score !== null && score !== undefined && score !== '';
+      }).map((player, index) => {
+        const courseHandicap = parseFloat(player['Course Handicap'] || player['Handicap'] || player.handicap || player['HCP'] || '0') || 0;
         
         // Try to get player info from Trackman mappings first, then fall back to provided data
         const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
@@ -954,7 +958,7 @@ const GolfTournamentSystem = () => {
           
           // Convert to actual stroke scores
           const netScore = par + scoreRelativeToPar; // Net score (par + relative score)
-          const grossScore = netScore + Math.abs(courseHandicap); // Gross score (net + handicap)
+          const grossScore = netScore + courseHandicap; // Gross score (net + handicap)
           
           // Debug logging for problematic players
           if (isNaN(grossScore) || isNaN(netScore)) {

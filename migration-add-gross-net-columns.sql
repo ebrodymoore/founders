@@ -3,10 +3,13 @@
 
 -- Add new columns for gross and net competitions to tournament_results
 ALTER TABLE tournament_results 
-ADD COLUMN IF NOT EXISTS gross_position INTEGER NOT NULL DEFAULT 999,
-ADD COLUMN IF NOT EXISTS net_position INTEGER NOT NULL DEFAULT 999,
-ADD COLUMN IF NOT EXISTS gross_points DECIMAL(6,2) NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS net_points DECIMAL(6,2) NOT NULL DEFAULT 0;
+ADD COLUMN IF NOT EXISTS gross_position INTEGER DEFAULT 999,
+ADD COLUMN IF NOT EXISTS net_position INTEGER DEFAULT 999,
+ADD COLUMN IF NOT EXISTS gross_points DECIMAL(6,2) DEFAULT 0,
+ADD COLUMN IF NOT EXISTS net_points DECIMAL(6,2) DEFAULT 0;
+
+-- Also remove NOT NULL constraint from existing position column if it exists
+ALTER TABLE tournament_results ALTER COLUMN position DROP NOT NULL;
 
 -- Add par column to tournaments table
 ALTER TABLE tournaments
