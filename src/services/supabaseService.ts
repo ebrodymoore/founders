@@ -286,6 +286,12 @@ export const leaderboardService = {
       const playerId = result.player_id
       const player = result.player
       
+      // Skip if player data is missing
+      if (!player) {
+        console.warn('Player data missing for result:', result)
+        return
+      }
+      
       if (!playerStatsMap[playerId]) {
         playerStatsMap[playerId] = {
           id: player.id,
