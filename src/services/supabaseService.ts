@@ -316,9 +316,9 @@ export const leaderboardService = {
       playerStats.best_finish = Math.min(playerStats.best_finish, position)
     })
     
-    // Calculate top 8 events and final stats
+    // Calculate top 8 events and final stats based on leaderboard type
     Object.values(playerStatsMap).forEach(player => {
-      // Sort by points and take top 8
+      // Sort by the points for the specific leaderboard type and take top 8
       const top8Events = player.all_events
         .sort((a, b) => (b.points || 0) - (a.points || 0))
         .slice(0, 8)
@@ -327,8 +327,17 @@ export const leaderboardService = {
       player.total_points = top8Events.reduce((sum, event) => sum + (event.points || 0), 0)
       
       if (top8Events.length > 0) {
-        player.avg_gross = Math.round(top8Events.reduce((sum, event) => sum + event.gross_score, 0) / top8Events.length)
-        player.avg_net = Math.round(top8Events.reduce((sum, event) => sum + event.net_score, 0) / top8Events.length)
+        // Always calculate both averages, but based on the actual scores used for this leaderboard type
+        const scoreType = type === 'gross' ? 'gross_score' : 'net_score'
+        const avgScore = Math.round(top8Events.reduce((sum, event) => sum + event[scoreType], 0) / top8Events.length)
+        
+        if (type === 'gross') {
+          player.avg_gross = avgScore
+          player.avg_net = avgScore // For display consistency when toggling
+        } else {
+          player.avg_gross = avgScore // For display consistency when toggling  
+          player.avg_net = avgScore
+        }
       }
     })
     
