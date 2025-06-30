@@ -142,14 +142,11 @@ export const useSupabaseData = () => {
     setIsLoading(true)
     console.log('🏆 Starting tournament upload:', { tournamentData, playersCount: playersData.length })
     
+    let tournament: Tournament | null = null
+    
     try {
-      // Create tournament
-      console.log('📝 Creating tournament in database...')
-      const tournament = await tournamentService.create(tournamentData)
-      console.log('✅ Tournament created:', tournament)
-      
-      // Process players and create results
-      const results: Omit<TournamentResult, 'id' | 'created_at' | 'updated_at'>[] = []
+      // Process players and create results first (validate everything)
+      const results: Omit<TournamentResult, 'id' | 'created_at' | 'updated_at' | 'tournament_id'>[] = []
       
       for (const playerData of playersData) {
         const trackmanId = playerData['Player Name'] || playerData['Name'] || playerData.name || playerData['Player'] || 'Unknown'
@@ -162,9 +159,7 @@ export const useSupabaseData = () => {
           player = await playerService.create(trackmanId, fallbackName, 'Sylvan')
         }
         
-        // Points will be calculated after positions are determined
-        
-        // Validate data before inserting
+        // Validate data before processing
         const grossScore = playerData.gross ?? 0;
         const netScore = playerData.net ?? 0;
         const handicap = playerData.handicap ?? 0;
@@ -185,7 +180,6 @@ export const useSupabaseData = () => {
         }
         
         results.push({
-          tournament_id: tournament.id,
           player_id: player.id,
           gross_position: 999, // Will be calculated after sorting
           net_position: 999,   // Will be calculated after sorting
@@ -212,13 +206,24 @@ export const useSupabaseData = () => {
         result.net_points = pointsService.calculatePoints(result.net_position, tournamentData.type);
       });
       
+      // Only create tournament after validation succeeds
+      console.log('📝 Creating tournament in database...')
+      tournament = await tournamentService.create(tournamentData)
+      console.log('✅ Tournament created:', tournament)
+      
+      // Add tournament_id to all results
+      const resultsWithTournamentId = results.map(result => ({
+        ...result,
+        tournament_id: tournament!.id
+      }))
+      
       // Bulk insert results
-      console.log('💾 Saving tournament results to database:', results.length, 'results')
-      await tournamentResultService.createBulk(results)
+      console.log('💾 Saving tournament results to database:', resultsWithTournamentId.length, 'results')
+      await tournamentResultService.createBulk(resultsWithTournamentId)
       console.log('✅ Tournament results saved')
       
       // Update local state
-      setTournaments(prev => [tournament, ...prev])
+      setTournaments(prev => [tournament!, ...prev])
       console.log('🔄 Local state updated')
       
       // Reload leaderboard (both gross and net will be available now)
@@ -236,6 +241,18 @@ export const useSupabaseData = () => {
         details: (error as any)?.details,
         hint: (error as any)?.hint
       })
+      
+      // If tournament was created but results failed, clean up the tournament
+      if (tournament) {
+        console.log('🧹 Cleaning up orphaned tournament...')
+        try {
+          await tournamentService.delete(tournament.id)
+          console.log('✅ Orphaned tournament cleaned up')
+        } catch (cleanupError) {
+          console.error('❌ Failed to clean up orphaned tournament:', cleanupError)
+        }
+      }
+      
       handleError(error, 'uploadTournamentWithResults')
       throw error
     } finally {
