@@ -39,6 +39,7 @@ const GolfTournamentSystem = () => {
   const [selectedTournament, setSelectedTournament] = useState('');
   const [activeTab, setActiveTab] = useState('leaderboard');
   const [leaderboardType, setLeaderboardType] = useState('net');
+  const [tournamentLeaderboardType, setTournamentLeaderboardType] = useState('net');
   const [showUpload, setShowUpload] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -2076,12 +2077,28 @@ const GolfTournamentSystem = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-white/70 text-sm">Winner</div>
+                        <div className="text-white/70 text-sm">{tournamentLeaderboardType === 'net' ? 'Net' : 'Gross'} Winner</div>
                         <div className="text-white font-bold text-xl">
-                          {tournamentResults[0]?.player?.display_name || 'No Results'}
+                          {(() => {
+                            const sortedResults = tournamentResults.sort((a, b) => 
+                              tournamentLeaderboardType === 'net' 
+                                ? a.net_position - b.net_position 
+                                : a.gross_position - b.gross_position
+                            );
+                            return sortedResults[0]?.player?.display_name || 'No Results';
+                          })()}
                         </div>
                         <div className="text-white/90">
-                          Score: {tournamentResults[0]?.net_score} {selectedTournamentData?.format === 'Stableford' ? 'pts' : ''}
+                          Score: {(() => {
+                            const sortedResults = tournamentResults.sort((a, b) => 
+                              tournamentLeaderboardType === 'net' 
+                                ? a.net_position - b.net_position 
+                                : a.gross_position - b.gross_position
+                            );
+                            const winner = sortedResults[0];
+                            const score = tournamentLeaderboardType === 'net' ? winner?.net_score : winner?.gross_score;
+                            return score;
+                          })()} {selectedTournamentData?.format === 'Stableford' ? 'pts' : ''}
                         </div>
                         {isAdmin && (
                           <button
@@ -2100,6 +2117,32 @@ const GolfTournamentSystem = () => {
                     </div>
                   </div>
 
+                  {/* Tournament Leaderboard Type Toggle */}
+                  <div className="flex justify-center mb-6">
+                    <div className="flex bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
+                      <button
+                        onClick={() => setTournamentLeaderboardType('net')}
+                        className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                          tournamentLeaderboardType === 'net'
+                            ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
+                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        Net
+                      </button>
+                      <button
+                        onClick={() => setTournamentLeaderboardType('gross')}
+                        className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                          tournamentLeaderboardType === 'gross'
+                            ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
+                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        Gross
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="overflow-x-auto rounded-xl border border-white/10">
                     <table className="w-full">
                       <thead>
@@ -2114,29 +2157,39 @@ const GolfTournamentSystem = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {tournamentResults.map((result: any, index) => (
+                        {tournamentResults
+                          .sort((a, b) => 
+                            tournamentLeaderboardType === 'net' 
+                              ? a.net_position - b.net_position 
+                              : a.gross_position - b.gross_position
+                          )
+                          .map((result: any, index) => {
+                            const position = tournamentLeaderboardType === 'net' ? result.net_position : result.gross_position;
+                            const points = tournamentLeaderboardType === 'net' ? result.net_points : result.gross_points;
+                            
+                            return (
                           <tr key={index} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                            result.net_position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                            position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                           }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
-                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(result.net_position)}`}>
-                                  {result.net_position}
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(position)}`}>
+                                  {position}
                                 </div>
                                 {result.tied_players && result.tied_players > 1 && (
                                   <span className="text-xs text-yellow-400 bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
                                     T{result.tied_players}
                                   </span>
                                 )}
-                                {getRankIcon(result.net_position)}
+                                {getRankIcon(position)}
                               </div>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${
-                                  result.net_position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
-                                  result.net_position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                                  result.net_position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
+                                  position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
+                                  position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
+                                  position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
                                   'bg-gradient-to-r from-blue-400 to-blue-600'
                                 }`}></div>
                                 <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
@@ -2161,7 +2214,7 @@ const GolfTournamentSystem = () => {
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-yellow-400 font-bold text-lg">
-                                  {typeof result.net_points === 'number' ? result.net_points.toFixed(2) : result.net_points}
+                                  {typeof points === 'number' ? points.toFixed(2) : points}
                                 </span>
                                 <span className="text-xs text-yellow-300">pts</span>
                                 {result.tied_players && result.tied_players > 1 && (
@@ -2170,7 +2223,8 @@ const GolfTournamentSystem = () => {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
