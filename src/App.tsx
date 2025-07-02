@@ -1942,8 +1942,7 @@ const GolfTournamentSystem = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/20 bg-gradient-to-r from-white/10 to-white/5">
-                      <th className="text-left p-4 font-semibold text-gray-200">Rank</th>
-                      <th className="text-left p-4 font-semibold text-gray-200">Player</th>
+                      <th className="text-left p-4 font-semibold text-gray-200">Name</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Club</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Total Points</th>
                       <th className="text-left p-4 font-semibold text-gray-200">Best Finish</th>
@@ -1954,16 +1953,12 @@ const GolfTournamentSystem = () => {
                       <tr key={player.name} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
                         index <= 2 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                       }`} style={{animationDelay: `${index * 100}ms`}}>
-                        <td className="p-4 font-bold text-white">
+                        <td className="p-4">
                           <div className="flex items-center gap-3">
                             <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(index + 1)}`}>
                               {index + 1}
                             </div>
                             {getRankIcon(index + 1)}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${
                               index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
                               index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
@@ -1990,11 +1985,6 @@ const GolfTournamentSystem = () => {
                             {player.club}
                           </span>
                         </td>
-                        <td className="p-4 text-white font-medium">
-                          <span className="text-lg">
-                            {leaderboardType === 'net' ? player.avgNet : player.avgGross}
-                          </span>
-                        </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             <span className="text-emerald-400 font-bold text-lg">
@@ -2003,12 +1993,6 @@ const GolfTournamentSystem = () => {
                             <span className="text-xs text-emerald-300">pts</span>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <span className="text-blue-400 font-medium">
-                            {player.countingEvents}/8
-                          </span>
-                        </td>
-                        <td className="p-4 text-slate-300">{player.totalEvents}</td>
                         <td className="p-4">
                           <span className={`font-medium ${
                             player.bestFinish === 1 ? 'text-yellow-400' :
@@ -2047,7 +2031,7 @@ const GolfTournamentSystem = () => {
                     <option value="" className="bg-gray-800">Select a tournament</option>
                     {supabaseTournaments.map(tournament => (
                       <option key={tournament.id} value={tournament.id} className="bg-gray-800">
-                        {tournament.name} - {tournament.date} ({tournament.format})
+                        {tournament.name}
                       </option>
                     ))}
                   </select>
