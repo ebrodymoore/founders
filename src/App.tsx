@@ -1065,7 +1065,7 @@ const GolfTournamentSystem = () => {
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="text-yellow-500 drop-shadow-lg" size={20} />;
-    if (rank === 2) return <Medal className="text-gray-400 drop-shadow-lg" size={20} />;
+    if (rank === 2) return <Medal className="text-slate-400 drop-shadow-lg" size={20} />;
     if (rank === 3) return <Award className="text-amber-600 drop-shadow-lg" size={20} />;
     return null;
   };
@@ -1073,7 +1073,7 @@ const GolfTournamentSystem = () => {
   const getPositionBadge = (position: number) => {
     if (position === 1) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-500/50';
     if (position === 2) return 'bg-gradient-to-r from-gray-300 to-gray-500 text-white shadow-lg shadow-gray-400/50';
-    if (position === 3) return 'bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-lg shadow-amber-600/50';
+    if (position === 3) return 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-600/50';
     if (position <= 10) return 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/50';
     return 'bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/50';
   };
@@ -1089,7 +1089,7 @@ const GolfTournamentSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-900 relative overflow-hidden">
       {/* Enhanced animated background */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -1128,7 +1128,7 @@ const GolfTournamentSystem = () => {
             <h1 className="text-6xl font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-4 animate-in fade-in-0 duration-1000">
               The Founders Series
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in-0 duration-1000 delay-300">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in-0 duration-1000 delay-300">
               A summer long race to the championship and a chance for members to compete, play, hangout, and win.
             </p>
           </div>
@@ -1139,7 +1139,7 @@ const GolfTournamentSystem = () => {
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'about'
                   ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
-                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
+                  : 'bg-slate-800 backdrop-blur-sm text-slate-100 hover:bg-slate-700 border border-slate-700'
               }`}
             >
               <FileText className="inline mr-3" size={24} />
@@ -1150,7 +1150,7 @@ const GolfTournamentSystem = () => {
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'leaderboard'
                   ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
-                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
+                  : 'bg-slate-800 backdrop-blur-sm text-slate-100 hover:bg-slate-700 border border-slate-700'
               }`}
             >
               <TrendingUp className="inline mr-3" size={24} />
@@ -1161,7 +1161,7 @@ const GolfTournamentSystem = () => {
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'schedule'
                   ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
-                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
+                  : 'bg-slate-800 backdrop-blur-sm text-slate-100 hover:bg-slate-700 border border-slate-700'
               }`}
             >
               <Target className="inline mr-3" size={24} />
@@ -1172,7 +1172,7 @@ const GolfTournamentSystem = () => {
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'tournaments'
                   ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-2xl shadow-emerald-500/25'
-                  : 'bg-white/10 backdrop-blur-sm text-gray-300 hover:bg-white/20 border border-white/20'
+                  : 'bg-slate-800 backdrop-blur-sm text-slate-100 hover:bg-slate-700 border border-slate-700'
               }`}
             >
               <Calendar className="inline mr-3" size={24} />
@@ -1189,7 +1189,7 @@ const GolfTournamentSystem = () => {
                 </button>
                 <button
                   onClick={() => setShowMappings(true)}
-                  className="group px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-blue-500/25"
+                  className="group px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-cyan-500/25"
                 >
                   <Settings className="inline mr-3" size={24} />
                   Manage Mappings
@@ -1207,13 +1207,13 @@ const GolfTournamentSystem = () => {
 
           {showLogin && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
+              <div className="bg-slate-800 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md border border-slate-700 shadow-2xl">
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-4">
                     <Lock className="text-white" size={24} />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Admin Access</h3>
-                  <p className="text-gray-300">Enter your credentials to continue</p>
+                  <p className="text-slate-300">Enter your credentials to continue</p>
                 </div>
                 
                 <div className="space-y-6">
@@ -1222,7 +1222,7 @@ const GolfTournamentSystem = () => {
                       type="text"
                       value={loginData.username}
                       onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                      className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-gray-400"
+                      className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
                       placeholder="Username"
                     />
                   </div>
@@ -1231,7 +1231,7 @@ const GolfTournamentSystem = () => {
                       type="password"
                       value={loginData.password}
                       onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                      className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-gray-400"
+                      className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
                       placeholder="Password"
                     />
                   </div>
@@ -1240,13 +1240,13 @@ const GolfTournamentSystem = () => {
                 <div className="flex gap-4 mt-8">
                   <button
                     onClick={handleLogin}
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold"
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 font-semibold"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setShowLogin(false)}
-                    className="flex-1 bg-white/10 backdrop-blur-sm text-gray-300 py-4 rounded-xl hover:bg-white/20 border border-white/20 transition-all duration-300 font-semibold"
+                    className="flex-1 bg-slate-800 backdrop-blur-sm text-slate-300 py-4 rounded-xl hover:bg-slate-700 border border-slate-700 transition-all duration-300 font-semibold"
                   >
                     Cancel
                   </button>
@@ -1257,43 +1257,43 @@ const GolfTournamentSystem = () => {
 
           {showUpload && isAdmin && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
+              <div className="bg-slate-800 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold text-white mb-2">Upload Tournament Results</h3>
-                  <p className="text-gray-300">Add new tournament data via CSV text or Excel/CSV file upload</p>
+                  <p className="text-slate-300">Add new tournament data via CSV text or Excel/CSV file upload</p>
                 </div>
                 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Tournament Name</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tournament Name</label>
                       <input
                         type="text"
                         value={uploadData.name}
                         onChange={(e) => setUploadData({...uploadData, name: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-gray-400"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
                         placeholder="Enter tournament name"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Date</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Date</label>
                       <input
                         type="date"
                         value={uploadData.date}
                         onChange={(e) => setUploadData({...uploadData, date: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
                       />
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Tournament Format</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tournament Format</label>
                       <select
                         value={uploadData.format}
                         onChange={(e) => setUploadData({...uploadData, format: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
                       >
                         <option value="Stroke Play" className="bg-gray-800">Stroke Play</option>
                         <option value="Stableford" className="bg-gray-800">Stableford</option>
@@ -1301,11 +1301,11 @@ const GolfTournamentSystem = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Tournament Type</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tournament Type</label>
                       <select
                         value={uploadData.type}
                         onChange={(e) => setUploadData({...uploadData, type: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
                       >
                         <option value="Major" className="bg-gray-800">Major Championship</option>
                         <option value="Tour Event" className="bg-gray-800">Tour Event</option>
@@ -1318,31 +1318,31 @@ const GolfTournamentSystem = () => {
                   {uploadData.format === 'Stroke Play' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Course Par</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Course Par</label>
                         <input
                           type="number"
                           min="60"
                           max="80"
                           value={uploadData.par}
                           onChange={(e) => setUploadData({...uploadData, par: parseInt(e.target.value) || 72})}
-                          className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-gray-400"
+                          className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
                           placeholder="Enter course par (e.g., 72)"
                         />
-                        <p className="text-xs text-gray-400 mt-1">Typical values: 70-72 for 18 holes</p>
+                        <p className="text-xs text-slate-400 mt-1">Typical values: 70-72 for 18 holes</p>
                       </div>
                       <div></div>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-4">Data Input Method</label>
-                    <div className="flex bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20 mb-6">
+                    <label className="block text-sm font-medium text-slate-300 mb-4">Data Input Method</label>
+                    <div className="flex bg-slate-800 backdrop-blur-sm rounded-xl p-1 border border-slate-700 mb-6">
                       <button
                         onClick={() => setUploadData({...uploadData, uploadMethod: 'csv'})}
                         className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                           uploadData.uploadMethod === 'csv'
                             ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
-                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-700'
                         }`}
                       >
                         <FileText size={20} />
@@ -1353,7 +1353,7 @@ const GolfTournamentSystem = () => {
                         className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                           uploadData.uploadMethod === 'file'
                             ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
-                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-700'
                         }`}
                       >
                         <FileSpreadsheet size={20} />
@@ -1364,11 +1364,11 @@ const GolfTournamentSystem = () => {
 
                   {uploadData.uploadMethod === 'csv' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">CSV Data</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">CSV Data</label>
                       <textarea
                         value={uploadData.csvData}
                         onChange={(e) => setUploadData({...uploadData, csvData: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-gray-400 h-40"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400 h-40"
                         placeholder={
                           uploadData.format === 'Stableford' 
                             ? "Player Name,Club,Total,Course Handicap\nJohn Smith,Sylvan,42,8\nJane Doe,8th,38,5"
@@ -1380,12 +1380,12 @@ const GolfTournamentSystem = () => {
 
                   {uploadData.uploadMethod === 'file' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Upload Excel or CSV File</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Upload Excel or CSV File</label>
                       <input
                         type="file"
                         accept=".csv,.xlsx,.xls"
                         onChange={handleFileUpload}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600"
                       />
                       {selectedFile && (
                         <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
@@ -1403,7 +1403,7 @@ const GolfTournamentSystem = () => {
                   <button
                     onClick={handleUpload}
                     disabled={isLoading}
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
@@ -1423,7 +1423,7 @@ const GolfTournamentSystem = () => {
                       setSelectedFile(null);
                       setUploadData({...uploadData, csvData: '', uploadMethod: 'csv'});
                     }}
-                    className="flex-1 bg-white/10 backdrop-blur-sm text-gray-300 py-4 rounded-xl hover:bg-white/20 border border-white/20 transition-all duration-300 font-semibold"
+                    className="flex-1 bg-slate-800 backdrop-blur-sm text-slate-300 py-4 rounded-xl hover:bg-slate-700 border border-slate-700 transition-all duration-300 font-semibold"
                   >
                     Cancel
                   </button>
@@ -1434,18 +1434,18 @@ const GolfTournamentSystem = () => {
 
           {showMappings && isAdmin && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
+              <div className="bg-slate-800 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                       <Settings className="text-blue-400" size={32} />
                       Username to Club Mappings
                     </h3>
-                    <p className="text-gray-300">Manage automatic club assignments based on player names</p>
+                    <p className="text-slate-300">Manage automatic club assignments based on player names</p>
                   </div>
                   <button
                     onClick={() => setShowMappings(false)}
-                    className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20"
+                    className="p-3 rounded-full bg-white/10 hover:bg-slate-700 transition-all duration-300 border border-slate-700"
                   >
                     <X className="text-white" size={24} />
                   </button>
@@ -1455,31 +1455,31 @@ const GolfTournamentSystem = () => {
                   <h4 className="text-xl font-bold text-white mb-4">Add New Mapping</h4>
                   <div className="grid grid-cols-12 gap-4 items-end">
                     <div className="col-span-4">
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Trackman ID</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Trackman ID</label>
                       <input
                         type="text"
                         value={newMapping.trackmanId}
                         onChange={(e) => setNewMapping({...newMapping, trackmanId: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
                         placeholder="e.g., Chad_Mathews"
                       />
                     </div>
                     <div className="col-span-4">
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Display Name</label>
                       <input
                         type="text"
                         value={newMapping.name}
                         onChange={(e) => setNewMapping({...newMapping, name: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
                         placeholder="e.g., Chad Mathews"
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Club</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Club</label>
                       <select
                         value={newMapping.club}
                         onChange={(e) => setNewMapping({...newMapping, club: e.target.value})}
-                        className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                        className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
                       >
                         <option value="Sylvan" className="bg-gray-800">Sylvan</option>
                         <option value="8th" className="bg-gray-800">8th</option>
@@ -1503,25 +1503,25 @@ const GolfTournamentSystem = () => {
                     <FileSpreadsheet className="text-emerald-400" size={24} />
                     Bulk Upload from CSV
                   </h4>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-6 border border-white/10">
                     <div className="mb-4">
-                      <p className="text-gray-300 text-sm mb-3">
+                      <p className="text-slate-300 text-sm mb-3">
                         Upload a CSV file with columns: <code className="bg-white/10 px-2 py-1 rounded text-emerald-400">trackman_id</code>, <code className="bg-white/10 px-2 py-1 rounded text-emerald-400">display_name</code>, <code className="bg-white/10 px-2 py-1 rounded text-emerald-400">club</code>
                       </p>
-                      <p className="text-gray-400 text-xs">
+                      <p className="text-slate-400 text-xs">
                         Club values must be either 'Sylvan' or '8th'. Existing players will be updated with new information.
                       </p>
                     </div>
                     
                     <div className="grid grid-cols-12 gap-4 items-end mb-4">
                       <div className="col-span-8">
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Select CSV File</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Select CSV File</label>
                         <input
                           id="csv-upload"
                           type="file"
                           accept=".csv"
                           onChange={handleCsvFileChange}
-                          className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600"
+                          className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600"
                         />
                       </div>
                       <div className="col-span-4 flex gap-2">
@@ -1544,7 +1544,7 @@ const GolfTournamentSystem = () => {
                         </button>
                         <button
                           onClick={clearCsvData}
-                          className="px-4 py-4 bg-white/10 backdrop-blur-sm text-gray-300 rounded-xl hover:bg-white/20 border border-white/20 transition-all duration-300 font-semibold"
+                          className="px-4 py-4 bg-slate-800 backdrop-blur-sm text-slate-300 rounded-xl hover:bg-slate-700 border border-slate-700 transition-all duration-300 font-semibold"
                         >
                           Clear
                         </button>
@@ -1577,7 +1577,7 @@ const GolfTournamentSystem = () => {
                           Preview ({csvData.length} total records)
                         </h5>
                         <div className="bg-white/5 rounded-lg overflow-hidden">
-                          <div className="grid grid-cols-12 gap-4 p-3 bg-white/10 text-gray-300 text-sm font-medium">
+                          <div className="grid grid-cols-12 gap-4 p-3 bg-white/10 text-slate-300 text-sm font-medium">
                             <div className="col-span-4">Trackman ID</div>
                             <div className="col-span-5">Display Name</div>
                             <div className="col-span-3">Club</div>
@@ -1586,7 +1586,7 @@ const GolfTournamentSystem = () => {
                             {csvPreview.map((row, index) => (
                               <div key={index} className="grid grid-cols-12 gap-4 p-3 text-sm border-t border-white/5 hover:bg-white/5">
                                 <div className="col-span-4 text-white font-mono">{row.trackman_id}</div>
-                                <div className="col-span-5 text-gray-300">{row.display_name}</div>
+                                <div className="col-span-5 text-slate-300">{row.display_name}</div>
                                 <div className="col-span-3">
                                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                     row.club === 'Sylvan' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 
@@ -1599,7 +1599,7 @@ const GolfTournamentSystem = () => {
                             ))}
                           </div>
                           {csvData.length > 10 && (
-                            <div className="p-3 bg-white/5 text-center text-gray-400 text-sm border-t border-white/5">
+                            <div className="p-3 bg-white/5 text-center text-slate-400 text-sm border-t border-white/5">
                               ... and {csvData.length - 10} more records
                             </div>
                           )}
@@ -1613,30 +1613,30 @@ const GolfTournamentSystem = () => {
                   <h4 className="text-xl font-bold text-white mb-4">Current Mappings</h4>
                   <div className="space-y-3">
                     {supabasePlayers.map((player) => (
-                      <div key={player.id} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                      <div key={player.id} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                         <div className="grid grid-cols-12 gap-4 items-center">
                           <div className="col-span-3">
-                            <div className="text-gray-400 text-xs mb-1">Trackman ID</div>
+                            <div className="text-slate-400 text-xs mb-1">Trackman ID</div>
                             <div className="text-white font-medium">{player.trackman_id}</div>
                           </div>
                           <div className="col-span-1 text-center">
-                            <div className="text-gray-400">→</div>
+                            <div className="text-slate-400">→</div>
                           </div>
                           <div className="col-span-4">
-                            <div className="text-gray-400 text-xs mb-1">Display Name</div>
+                            <div className="text-slate-400 text-xs mb-1">Display Name</div>
                             <input
                               type="text"
                               value={player.display_name}
                               onChange={(e) => updateMapping(player.id, e.target.value, player.club)}
-                              className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
+                              className="w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
                             />
                           </div>
                           <div className="col-span-2">
-                            <div className="text-gray-400 text-xs mb-1">Club</div>
+                            <div className="text-slate-400 text-xs mb-1">Club</div>
                             <select
                               value={player.club}
                               onChange={(e) => updateMapping(player.id, player.display_name, e.target.value)}
-                              className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
+                              className="w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-sm"
                             >
                               <option value="Sylvan" className="bg-gray-800">Sylvan</option>
                               <option value="8th" className="bg-gray-800">8th</option>
@@ -1645,7 +1645,7 @@ const GolfTournamentSystem = () => {
                           <div className="col-span-2 flex justify-end">
                             <span className={`px-3 py-1 rounded-full text-sm font-semibold mr-2 ${
                               player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                              player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                              player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/30' : 
                               'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                             }`}>
                               {player.club}
@@ -1662,7 +1662,7 @@ const GolfTournamentSystem = () => {
                     ))}
                   </div>
                   {supabasePlayers.length === 0 && (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-slate-400">
                       No mappings configured yet. Add your first mapping above.
                     </div>
                   )}
@@ -1673,17 +1673,17 @@ const GolfTournamentSystem = () => {
 
           {showPlayerDetails && selectedPlayer && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
+              <div className="bg-slate-800 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                       <Trophy className="text-emerald-400" size={32} />
                       {selectedPlayer.name}
                     </h3>
-                    <div className="flex items-center gap-4 text-gray-300">
+                    <div className="flex items-center gap-4 text-slate-300">
                       <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                         selectedPlayer.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                        selectedPlayer.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                        selectedPlayer.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/30' : 
                         'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                       }`}>
                         {selectedPlayer.club}
@@ -1694,7 +1694,7 @@ const GolfTournamentSystem = () => {
                   </div>
                   <button
                     onClick={() => setShowPlayerDetails(false)}
-                    className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20"
+                    className="p-3 rounded-full bg-white/10 hover:bg-slate-700 transition-all duration-300 border border-slate-700"
                   >
                     <X className="text-white" size={24} />
                   </button>
@@ -1704,34 +1704,34 @@ const GolfTournamentSystem = () => {
                   <h4 className="text-xl font-bold text-white mb-4">Tournament Results</h4>
                   <div className="grid gap-4">
                     {selectedPlayer.allEvents.map((event: any, index: number) => (
-                      <div key={index} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                      <div key={index} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-slate-700 transition-all duration-300">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <h5 className="font-bold text-white text-lg">{event.tournamentName}</h5>
-                            <p className="text-gray-300 text-sm">{event.tournamentDate}</p>
+                            <p className="text-slate-300 text-sm">{event.tournamentDate}</p>
                           </div>
                           <div className="flex items-center gap-6 text-right">
                             <div>
-                              <div className="text-gray-400 text-xs">Position</div>
+                              <div className="text-slate-400 text-xs">Position</div>
                               <div className={`font-bold text-lg ${
                                 event.position === 1 ? 'text-yellow-400' :
                                 event.position <= 3 ? 'text-emerald-400' :
                                 event.position <= 10 ? 'text-blue-400' :
-                                'text-gray-300'
+                                'text-slate-300'
                               }`}>
                                 {event.position === Infinity ? '-' : event.position}
                               </div>
                             </div>
                             <div>
-                              <div className="text-gray-400 text-xs">Gross</div>
+                              <div className="text-slate-400 text-xs">Gross</div>
                               <div className="text-white font-medium text-lg">{event.gross}</div>
                             </div>
                             <div>
-                              <div className="text-gray-400 text-xs">Net</div>
+                              <div className="text-slate-400 text-xs">Net</div>
                               <div className="text-emerald-400 font-medium text-lg">{event.net}</div>
                             </div>
                             <div>
-                              <div className="text-gray-400 text-xs">Points</div>
+                              <div className="text-slate-400 text-xs">Points</div>
                               <div className="text-yellow-400 font-bold text-lg">{event.points.toFixed(1)}</div>
                             </div>
                           </div>
@@ -1744,26 +1744,26 @@ const GolfTournamentSystem = () => {
                 <div className="border-t border-white/20 pt-6">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                     <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                      <div className="text-gray-400 text-sm mb-1">Total Events</div>
+                      <div className="text-slate-400 text-sm mb-1">Total Events</div>
                       <div className="text-white font-bold text-2xl">{selectedPlayer.totalEvents}</div>
                     </div>
                     <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                      <div className="text-gray-400 text-sm mb-1">Counting Events</div>
+                      <div className="text-slate-400 text-sm mb-1">Counting Events</div>
                       <div className="text-blue-400 font-bold text-2xl">{selectedPlayer.countingEvents}</div>
                     </div>
                     <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                      <div className="text-gray-400 text-sm mb-1">Best Finish</div>
+                      <div className="text-slate-400 text-sm mb-1">Best Finish</div>
                       <div className={`font-bold text-2xl ${
                         selectedPlayer.bestFinish === 1 ? 'text-yellow-400' :
                         selectedPlayer.bestFinish <= 3 ? 'text-emerald-400' :
                         selectedPlayer.bestFinish <= 10 ? 'text-blue-400' :
-                        'text-gray-300'
+                        'text-slate-300'
                       }`}>
                         {selectedPlayer.bestFinish === Infinity ? '-' : selectedPlayer.bestFinish}
                       </div>
                     </div>
                     <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                      <div className="text-gray-400 text-sm mb-1">Avg {leaderboardType === 'net' ? 'Net' : 'Gross'}</div>
+                      <div className="text-slate-400 text-sm mb-1">Avg {leaderboardType === 'net' ? 'Net' : 'Gross'}</div>
                       <div className="text-emerald-400 font-bold text-2xl">
                         {leaderboardType === 'net' ? selectedPlayer.avgNet : selectedPlayer.avgGross}
                       </div>
@@ -1775,18 +1775,18 @@ const GolfTournamentSystem = () => {
           )}
 
           {activeTab === 'schedule' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+            <div className="bg-slate-800 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-700">
               <div className="mb-8 animate-in fade-in-0 duration-1000">
                 <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                   <Target className="text-emerald-400" size={32} />
                   2025 Season Schedule
                 </h2>
-                <p className="text-gray-300">Tournament calendar and upcoming events</p>
+                <p className="text-slate-300">Tournament calendar and upcoming events</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                 {Object.entries(schedule).map(([month, events]) => (
-                  <div key={month} className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <div key={month} className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                     <h3 className="text-2xl font-bold text-white mb-6 text-center bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
                       {month}
                     </h3>
@@ -1822,7 +1822,7 @@ const GolfTournamentSystem = () => {
                                 {event.name}
                               </h4>
                               {event.subtitle && (
-                                <p className="text-gray-300 text-sm mt-1">
+                                <p className="text-slate-300 text-sm mt-1">
                                   {event.subtitle}
                                 </p>
                               )}
@@ -1855,7 +1855,7 @@ const GolfTournamentSystem = () => {
                     <Trophy className="text-white" size={24} />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-3">Playoff Qualification</h3>
-                  <div className="text-gray-300 text-lg max-w-3xl mx-auto leading-relaxed">
+                  <div className="text-slate-300 text-lg max-w-3xl mx-auto leading-relaxed">
                     <p className="mb-3">
                       <strong className="text-yellow-400">Top 4 Net</strong> and <strong className="text-yellow-400">Top 4 Gross</strong> players from each club qualify for the season-ending playoff.
                     </p>
@@ -1869,24 +1869,24 @@ const GolfTournamentSystem = () => {
           )}
 
           {activeTab === 'leaderboard' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+            <div className="bg-slate-800 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-700">
               <div className="flex flex-wrap gap-6 mb-8 items-center justify-between animate-in fade-in-0 duration-1000">
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                     <TrendingUp className="text-emerald-400" size={32} />
                     Championship Leaderboard
                   </h2>
-                  <p className="text-gray-300">Top 8 events count toward season standings</p>
+                  <p className="text-slate-300">Top 8 events count toward season standings</p>
                 </div>
                 
                 <div className="flex flex-wrap gap-4 items-center">
-                  <div className="flex bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
+                  <div className="flex bg-slate-800 backdrop-blur-sm rounded-xl p-1 border border-slate-700">
                     <button
                       onClick={() => setLeaderboardType('net')}
                       className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                         leaderboardType === 'net'
                           ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700'
                       }`}
                     >
                       Net
@@ -1896,20 +1896,20 @@ const GolfTournamentSystem = () => {
                       className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                         leaderboardType === 'gross'
                           ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700'
                       }`}
                     >
                       Gross
                     </button>
                   </div>
                   
-                  <div className="flex bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
+                  <div className="flex bg-slate-800 backdrop-blur-sm rounded-xl p-1 border border-slate-700">
                     <button
                       onClick={() => setSelectedClub('all')}
                       className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                         selectedClub === 'all'
                           ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg'
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700'
                       }`}
                     >
                       All Clubs
@@ -1919,7 +1919,7 @@ const GolfTournamentSystem = () => {
                       className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                         selectedClub === 'Sylvan'
                           ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700'
                       }`}
                     >
                       Sylvan
@@ -1929,7 +1929,7 @@ const GolfTournamentSystem = () => {
                       className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                         selectedClub === '8th'
                           ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700'
                       }`}
                     >
                       8th
@@ -1951,7 +1951,7 @@ const GolfTournamentSystem = () => {
                   </thead>
                   <tbody>
                     {getFilteredLeaderboard().map((player: any, index) => (
-                      <tr key={player.name} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
+                      <tr key={player.name} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
                         index <= 2 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                       }`} style={{animationDelay: `${index * 100}ms`}}>
                         <td className="p-4 font-bold text-white">
@@ -1967,7 +1967,7 @@ const GolfTournamentSystem = () => {
                             <div className={`w-3 h-3 rounded-full ${
                               index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
                               index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                              index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
+                              index === 2 ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-lg shadow-emerald-600/50' :
                               'bg-gradient-to-r from-blue-400 to-blue-600'
                             }`}></div>
                             <button
@@ -1984,7 +1984,7 @@ const GolfTournamentSystem = () => {
                         <td className="p-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             player.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                            player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                            player.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/30' : 
                             'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                           }`}>
                             {player.club}
@@ -2008,13 +2008,13 @@ const GolfTournamentSystem = () => {
                             {player.countingEvents}/8
                           </span>
                         </td>
-                        <td className="p-4 text-gray-300">{player.totalEvents}</td>
+                        <td className="p-4 text-slate-300">{player.totalEvents}</td>
                         <td className="p-4">
                           <span className={`font-medium ${
                             player.bestFinish === 1 ? 'text-yellow-400' :
                             player.bestFinish <= 3 ? 'text-emerald-400' :
                             player.bestFinish <= 10 ? 'text-blue-400' :
-                            'text-gray-300'
+                            'text-slate-300'
                           }`}>
                             {player.bestFinish === Infinity ? '-' : player.bestFinish}
                           </span>
@@ -2028,21 +2028,21 @@ const GolfTournamentSystem = () => {
           )}
 
           {activeTab === 'tournaments' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+            <div className="bg-slate-800 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-700">
               <div className="flex flex-wrap gap-6 mb-8 items-center justify-between animate-in fade-in-0 duration-1000">
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                     <Calendar className="text-emerald-400" size={32} />
                     Tournament Hub
                   </h2>
-                  <p className="text-gray-300">Complete tournament results and standings</p>
+                  <p className="text-slate-300">Complete tournament results and standings</p>
                 </div>
                 
                 <div className="relative">
                   <select
                     value={selectedTournament}
                     onChange={(e) => setSelectedTournament(e.target.value)}
-                    className="px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 text-white appearance-none pr-12 min-w-[300px]"
+                    className="px-6 py-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 text-white appearance-none pr-12 min-w-[300px]"
                   >
                     <option value="" className="bg-gray-800">Select a tournament</option>
                     {supabaseTournaments.map(tournament => (
@@ -2051,7 +2051,7 @@ const GolfTournamentSystem = () => {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                  <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
                 </div>
               </div>
 
@@ -2061,7 +2061,7 @@ const GolfTournamentSystem = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-bold text-2xl text-white mb-2">{selectedTournamentData.name}</h3>
-                        <div className="flex items-center gap-6 text-white/90">
+                        <div className="flex items-center gap-6 text-slate-100">
                           <div className="flex items-center gap-2">
                             <Calendar size={16} />
                             <span>{selectedTournamentData.date}</span>
@@ -2077,7 +2077,7 @@ const GolfTournamentSystem = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-white/70 text-sm">{tournamentLeaderboardType === 'net' ? 'Net' : 'Gross'} Winner</div>
+                        <div className="text-slate-300 text-sm">{tournamentLeaderboardType === 'net' ? 'Net' : 'Gross'} Winner</div>
                         <div className="text-white font-bold text-xl">
                           {(() => {
                             const sortedResults = tournamentResults.sort((a, b) => 
@@ -2088,7 +2088,7 @@ const GolfTournamentSystem = () => {
                             return sortedResults[0]?.player?.display_name || 'No Results';
                           })()}
                         </div>
-                        <div className="text-white/90">
+                        <div className="text-slate-100">
                           Score: {(() => {
                             const sortedResults = tournamentResults.sort((a, b) => 
                               tournamentLeaderboardType === 'net' 
@@ -2119,13 +2119,13 @@ const GolfTournamentSystem = () => {
 
                   {/* Tournament Leaderboard Type Toggle */}
                   <div className="flex justify-center mb-6">
-                    <div className="flex bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
+                    <div className="flex bg-slate-800 backdrop-blur-sm rounded-xl p-1 border border-slate-700">
                       <button
                         onClick={() => setTournamentLeaderboardType('net')}
                         className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                           tournamentLeaderboardType === 'net'
                             ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
-                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-700'
                         }`}
                       >
                         Net
@@ -2135,7 +2135,7 @@ const GolfTournamentSystem = () => {
                         className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                           tournamentLeaderboardType === 'gross'
                             ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg'
-                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-700'
                         }`}
                       >
                         Gross
@@ -2168,7 +2168,7 @@ const GolfTournamentSystem = () => {
                             const points = tournamentLeaderboardType === 'net' ? result.net_points : result.gross_points;
                             
                             return (
-                          <tr key={index} className={`border-b border-white/10 hover:bg-white/10 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
+                          <tr key={index} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
                             position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                           }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
@@ -2189,7 +2189,7 @@ const GolfTournamentSystem = () => {
                                 <div className={`w-3 h-3 rounded-full ${
                                   position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
                                   position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                                  position === 3 ? 'bg-gradient-to-r from-amber-600 to-amber-800 shadow-lg shadow-amber-600/50' :
+                                  position === 3 ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-lg shadow-emerald-600/50' :
                                   'bg-gradient-to-r from-blue-400 to-blue-600'
                                 }`}></div>
                                 <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
@@ -2200,7 +2200,7 @@ const GolfTournamentSystem = () => {
                             <td className="p-4">
                               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                 result.player?.club === 'Sylvan' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/25 border border-green-400/30' : 
-                                result.player?.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30' : 
+                                result.player?.club === '8th' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/30' : 
                                 'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-500/25 border border-gray-400/30'
                               }`}>
                                 {result.player?.club}
@@ -2210,7 +2210,7 @@ const GolfTournamentSystem = () => {
                             <td className="p-4 text-emerald-400 font-medium text-lg">
                               {result.net_score}{selectedTournamentData?.format === 'Stableford' ? ' pts' : ''}
                             </td>
-                            <td className="p-4 text-gray-300">{result.handicap}</td>
+                            <td className="p-4 text-slate-300">{result.handicap}</td>
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-yellow-400 font-bold text-lg">
@@ -2218,7 +2218,7 @@ const GolfTournamentSystem = () => {
                                 </span>
                                 <span className="text-xs text-yellow-300">pts</span>
                                 {result.tied_players && result.tied_players > 1 && (
-                                  <span className="text-xs text-gray-400 bg-gray-400/20 px-1 py-0.5 rounded">(split)</span>
+                                  <span className="text-xs text-slate-400 bg-gray-400/20 px-1 py-0.5 rounded">(split)</span>
                                 )}
                               </div>
                             </td>
@@ -2237,13 +2237,13 @@ const GolfTournamentSystem = () => {
                     <Users className="text-white" size={40} />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-3">No Tournaments Yet</h3>
-                  <p className="text-gray-400 text-lg max-w-md mx-auto leading-relaxed">
+                  <p className="text-slate-400 text-lg max-w-md mx-auto leading-relaxed">
                     Upload your first tournament results to get started with the championship tracking system
                   </p>
                   {isAdmin && (
                     <button
                       onClick={() => setShowUpload(true)}
-                      className="mt-6 px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold transform hover:scale-105 shadow-2xl shadow-emerald-500/25"
+                      className="mt-6 px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 font-semibold transform hover:scale-105 shadow-2xl shadow-emerald-500/25"
                     >
                       <Upload className="inline mr-2" size={20} />
                       Upload First Tournament
@@ -2255,54 +2255,54 @@ const GolfTournamentSystem = () => {
           )}
 
           {activeTab === 'about' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+            <div className="bg-slate-800 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-700">
               <div className="mb-8 animate-in fade-in-0 duration-1000">
                 <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                   <FileText className="text-emerald-400" size={32} />
                   About Founders Series
                 </h2>
-                <p className="text-gray-300">A summer long race to the championship</p>
+                <p className="text-slate-300">A summer long race to the championship</p>
               </div>
 
               <div className="space-y-8">
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                     <Trophy className="text-yellow-400" size={28} />
                     What is it?
                   </h3>
-                  <p className="text-gray-300 leading-relaxed mb-4 text-lg">
+                  <p className="text-slate-300 leading-relaxed mb-4 text-lg">
                     A summer long race to the championship and a chance for members to compete, play, hangout, and win.
                   </p>
-                  <p className="text-gray-300 leading-relaxed mb-4 text-lg">
+                  <p className="text-slate-300 leading-relaxed mb-4 text-lg">
                     Show up, play well, and you'll climb the leaderboard, make the Founders Cup team, qualify for the playoffs and win cash.
                   </p>
-                  <p className="text-gray-300 leading-relaxed text-lg">
+                  <p className="text-slate-300 leading-relaxed text-lg">
                     We've designed 23 tournaments to offer the low, mid and high handicapper the chance to win.
                   </p>
                 </div>
 
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <Users className="text-red-400" size={24} />
                     FOUNDERS CUP
                   </h3>
-                  <p className="text-gray-300 leading-relaxed text-lg">
+                  <p className="text-slate-300 leading-relaxed text-lg">
                     A Ryder Cup event pitting Sylvan against 8th ave.
                     The top 4 gross and top 4 net players from each clubhouse will face off in a battle to crown the best clubhouse.
                   </p>
                 </div>
 
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <Target className="text-green-400" size={24} />
                     THE PLAYOFF
                   </h3>
-                  <p className="text-gray-300 leading-relaxed text-lg">
+                  <p className="text-slate-300 leading-relaxed text-lg">
                     An outdoor 18 hole shootout at The Golf Club of TN. The top 3 players on the gross and the top 3 players on the net leaderboard play for a chance at the Founders Series championship and $1,000
                   </p>
                 </div>
 
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                     <span className="text-green-400">💰</span>
                     How much?
@@ -2311,7 +2311,7 @@ const GolfTournamentSystem = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-6">
                       <h4 className="text-xl font-bold text-white mb-4 text-center">FOUNDRY CLUB</h4>
-                      <ul className="text-gray-300 space-y-3 mb-6">
+                      <ul className="text-slate-300 space-y-3 mb-6">
                         <li className="flex items-start gap-2">
                           <span className="text-emerald-400 mt-1">✓</span>
                           All events included
@@ -2336,19 +2336,19 @@ const GolfTournamentSystem = () => {
                       <h4 className="text-xl font-bold text-white mb-4 text-center">Without Foundry Club</h4>
                       <div className="space-y-4">
                         <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
-                          <span className="text-gray-300">MAJORS</span>
+                          <span className="text-slate-300">MAJORS</span>
                           <span className="text-white font-bold">$35/event</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
-                          <span className="text-gray-300">TOUR</span>
+                          <span className="text-slate-300">TOUR</span>
                           <span className="text-white font-bold">$25/event</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
-                          <span className="text-gray-300">LEAGUE</span>
+                          <span className="text-slate-300">LEAGUE</span>
                           <span className="text-white font-bold">$5/event</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
-                          <span className="text-gray-300">SUPR CLUB</span>
+                          <span className="text-slate-300">SUPR CLUB</span>
                           <span className="text-white font-bold">$0/event</span>
                         </div>
                       </div>
@@ -2383,14 +2383,14 @@ const GolfTournamentSystem = () => {
                 </h2>
                 <button
                   onClick={handleNewPlayersCancel}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
+                  className="p-2 rounded-lg bg-white/10 hover:bg-slate-700 text-white transition-all duration-300"
                 >
                   <X size={24} />
                 </button>
               </div>
               
               <div className="mb-6">
-                <p className="text-gray-300 text-lg leading-relaxed">
+                <p className="text-slate-300 text-lg leading-relaxed">
                   The following TrackmanIDs were found in the uploaded tournament but don't exist in the database yet. 
                   Please review and confirm the display names for these new players:
                 </p>
@@ -2398,19 +2398,19 @@ const GolfTournamentSystem = () => {
 
               <div className="space-y-4 mb-8">
                 {newPlayersFound.map((newPlayer, index) => (
-                  <div key={newPlayer.trackmanId} className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div key={newPlayer.trackmanId} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-6 border border-white/10">
                     <div className="grid grid-cols-12 gap-4 items-center">
                       <div className="col-span-4">
-                        <div className="text-gray-400 text-sm mb-2">TrackmanID (from upload)</div>
+                        <div className="text-slate-400 text-sm mb-2">TrackmanID (from upload)</div>
                         <div className="text-white font-mono bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600">
                           {newPlayer.trackmanId}
                         </div>
                       </div>
                       <div className="col-span-1 text-center">
-                        <div className="text-gray-400">→</div>
+                        <div className="text-slate-400">→</div>
                       </div>
                       <div className="col-span-4">
-                        <div className="text-gray-400 text-sm mb-2">Display Name</div>
+                        <div className="text-slate-400 text-sm mb-2">Display Name</div>
                         <input
                           type="text"
                           value={newPlayer.suggestedName}
@@ -2419,12 +2419,12 @@ const GolfTournamentSystem = () => {
                             updatedPlayers[index].suggestedName = e.target.value;
                             setNewPlayersFound(updatedPlayers);
                           }}
-                          className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                          className="w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
                           placeholder="Enter display name..."
                         />
                       </div>
                       <div className="col-span-3">
-                        <div className="text-gray-400 text-sm mb-2">Club</div>
+                        <div className="text-slate-400 text-sm mb-2">Club</div>
                         <select
                           value={newPlayer.club}
                           onChange={(e) => {
@@ -2432,7 +2432,7 @@ const GolfTournamentSystem = () => {
                             updatedPlayers[index].club = e.target.value as 'Sylvan' | '8th';
                             setNewPlayersFound(updatedPlayers);
                           }}
-                          className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                          className="w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
                         >
                           <option value="Sylvan" className="bg-gray-800">Sylvan</option>
                           <option value="8th" className="bg-gray-800">8th</option>
@@ -2452,7 +2452,7 @@ const GolfTournamentSystem = () => {
                 </button>
                 <button
                   onClick={handleNewPlayersConfirm}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/25"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/25"
                 >
                   Add Players & Continue Upload
                 </button>
