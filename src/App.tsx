@@ -1318,7 +1318,6 @@ const GolfTournamentSystem = () => {
                       >
                         <option value="Major" className="bg-gray-800">Major Championship</option>
                         <option value="Tour Event" className="bg-gray-800">Tour Event</option>
-                        <option value="League" className="bg-gray-800">League Play</option>
                         <option value="SUPR" className="bg-gray-800">SUPR Event</option>
                         <option value="League Night" className="bg-gray-800">League Night</option>
                       </select>
