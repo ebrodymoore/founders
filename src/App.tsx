@@ -1068,8 +1068,8 @@ const GolfTournamentSystem = () => {
     return null;
   };
 
-  const getPositionBadge = (position: number) => {
-    if (position <= 4) return 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/50';
+  const getPositionBadge = (position: number, isTournament: boolean = false) => {
+    if (isTournament && position <= 4) return 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/50';
     if (position <= 10) return 'bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/50';
     return 'bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/50';
   };
@@ -1947,20 +1947,15 @@ const GolfTournamentSystem = () => {
                   <tbody>
                     {getFilteredLeaderboard().map((player: any, index) => (
                       <tr key={player.name} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                        index <= 3 ? 'bg-gradient-to-r from-emerald-500/10 to-transparent border-b-emerald-500/30' : ''
-                      } ${
-                        index === 3 ? 'border-b-4 border-b-emerald-500/50' : ''
+                        index <= 2 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
                       }`} style={{animationDelay: `${index * 100}ms`}}>
                         <td className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(index + 1)}`}>
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(index + 1, false)}`}>
                               {index + 1}
                             </div>
                             {getRankIcon()}
-                            <div className={`w-3 h-3 rounded-full ${
-                              index <= 3 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50' :
-                              'bg-gradient-to-r from-blue-400 to-blue-600'
-                            }`}></div>
+                            <div className={`w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-blue-600`}></div>
                             <button
                               onClick={() => handlePlayerClick(player)}
                               className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300 hover:underline cursor-pointer text-left"
@@ -2155,7 +2150,7 @@ const GolfTournamentSystem = () => {
                           }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
-                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(position)}`}>
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(position, true)}`}>
                                   {position}
                                 </div>
                                 {result.tied_players && result.tied_players > 1 && (
