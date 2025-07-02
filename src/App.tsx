@@ -953,6 +953,18 @@ const GolfTournamentSystem = () => {
             handicap: courseHandicap,
             position: index + 1 // Will be recalculated in the service
           };
+        } else if (tournamentData.format === 'Points') {
+          const points = parseInt(player['Points'] || player.points || '0') || 0;
+          
+          return {
+            'Player Name': trackmanId,
+            name: playerInfo.name,
+            net: points, // Store points in net field for processing
+            gross: points, // Store same points in gross field
+            handicap: 0, // No handicap needed for direct points
+            position: index + 1, // Will be recalculated in the service
+            directPoints: points // Flag to indicate this uses direct points
+          };
         } else {
           // Score is relative to par (e.g., +2, 0, -2)
           const scoreRelativeToPar = parseInt(player['Score'] || player['Net'] || player.net || player['Net Score'] || '0') || 0;
@@ -1293,6 +1305,7 @@ const GolfTournamentSystem = () => {
                       >
                         <option value="Stroke Play" className="bg-gray-800">Stroke Play</option>
                         <option value="Stableford" className="bg-gray-800">Stableford</option>
+                        <option value="Points" className="bg-gray-800">Direct Points</option>
                       </select>
                     </div>
                     
@@ -1307,6 +1320,7 @@ const GolfTournamentSystem = () => {
                         <option value="Tour Event" className="bg-gray-800">Tour Event</option>
                         <option value="League" className="bg-gray-800">League Play</option>
                         <option value="SUPR" className="bg-gray-800">SUPR Event</option>
+                        <option value="League Night" className="bg-gray-800">League Night</option>
                       </select>
                     </div>
                   </div>
@@ -1368,6 +1382,8 @@ const GolfTournamentSystem = () => {
                         placeholder={
                           uploadData.format === 'Stableford' 
                             ? "Player Name,Club,Total,Course Handicap\nJohn Smith,Sylvan,42,8\nJane Doe,8th,38,5"
+                            : uploadData.format === 'Points'
+                            ? "Player Name,Points\nJohn Smith,100\nJane Doe,85"
                             : "Player Name,Club,Score,Course Handicap\nJohn Smith,Sylvan,-2,4\nJane Doe,8th,1,8"
                         }
                       />

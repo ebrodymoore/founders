@@ -35,8 +35,8 @@ export type Tournament = {
   id: string
   name: string
   date: string
-  type: 'Major' | 'Tour Event' | 'League' | 'SUPR'
-  format: 'Stroke Play' | 'Stableford'
+  type: 'Major' | 'Tour Event' | 'League' | 'SUPR' | 'League Night'
+  format: 'Stroke Play' | 'Stableford' | 'Points'
   created_at: string
 }
 

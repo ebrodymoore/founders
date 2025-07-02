@@ -146,7 +146,7 @@ export const useSupabaseData = () => {
     
     try {
       // Process players and create results first (validate everything)
-      const results: Omit<TournamentResult, 'id' | 'created_at' | 'updated_at' | 'tournament_id'>[] = []
+      const results: Array<Omit<TournamentResult, 'id' | 'created_at' | 'updated_at' | 'tournament_id'> & { directPoints?: boolean }> = []
       
       for (const playerData of playersData) {
         const trackmanId = playerData['Player Name'] || playerData['Name'] || playerData.name || playerData['Player'] || 'Unknown'
@@ -164,6 +164,11 @@ export const useSupabaseData = () => {
         const netScore = playerData.net ?? 0;
         const handicap = playerData.handicap ?? 0;
         
+        // Check for direct points (for Points format tournaments)
+        const grossPoints = playerData.grossPoints ?? playerData.gross_points ?? 0;
+        const netPoints = playerData.netPoints ?? playerData.net_points ?? 0;
+        const directPoints = playerData.directPoints || (grossPoints > 0 || netPoints > 0);
+        
         console.log('🔍 Player data validation:', {
           trackmanId,
           gross: playerData.gross,
@@ -171,10 +176,15 @@ export const useSupabaseData = () => {
           handicap: playerData.handicap,
           grossScore,
           netScore,
-          position: playerData.position
+          position: playerData.position,
+          grossPoints,
+          netPoints,
+          directPoints,
+          format: tournamentData.format
         });
         
-        if (grossScore === null || grossScore === undefined || isNaN(grossScore)) {
+        // For Points format, allow missing scores if points are provided directly
+        if (tournamentData.format !== 'Points' && (grossScore === null || grossScore === undefined || isNaN(grossScore))) {
           console.error('❌ Invalid gross score for player:', trackmanId, grossScore);
           throw new Error(`Invalid gross score for player ${trackmanId}: ${grossScore}`);
         }
@@ -186,9 +196,10 @@ export const useSupabaseData = () => {
           gross_score: grossScore,
           net_score: netScore,
           handicap: handicap,
-          gross_points: 0,     // Will be calculated after positions are determined
-          net_points: 0,       // Will be calculated after positions are determined
-          tied_players: 1 // Will be calculated in tie handling logic
+          gross_points: tournamentData.format === 'Points' && directPoints ? grossPoints : 0, // Use direct points for Points format
+          net_points: tournamentData.format === 'Points' && directPoints ? netPoints : 0,     // Use direct points for Points format
+          tied_players: 1, // Will be calculated in tie handling logic
+          directPoints: directPoints // Flag to indicate direct points were provided
         })
       }
       
@@ -206,18 +217,28 @@ export const useSupabaseData = () => {
             tiedPlayers++;
           }
           
-          // Calculate total points for tied positions
-          let totalPoints = 0;
-          for (let pos = currentPosition; pos < currentPosition + tiedPlayers; pos++) {
-            totalPoints += pointsService.calculatePoints(pos, tournamentData.type);
-          }
-          const averagePoints = totalPoints / tiedPlayers;
-          
-          // Assign position and points to all tied players
-          for (let j = 0; j < tiedPlayers; j++) {
-            sortedResults[i + j][positionField] = currentPosition;
-            sortedResults[i + j][pointsField] = averagePoints;
-            sortedResults[i + j].tied_players = tiedPlayers;
+          // For Points format with direct points, skip points calculation but still assign positions
+          if (tournamentData.format === 'Points' && sortedResults[i].directPoints) {
+            // Assign position but keep direct points unchanged
+            for (let j = 0; j < tiedPlayers; j++) {
+              sortedResults[i + j][positionField] = currentPosition;
+              // Don't overwrite the direct points that were already assigned
+              sortedResults[i + j].tied_players = tiedPlayers;
+            }
+          } else {
+            // Calculate total points for tied positions (traditional scoring)
+            let totalPoints = 0;
+            for (let pos = currentPosition; pos < currentPosition + tiedPlayers; pos++) {
+              totalPoints += pointsService.calculatePoints(pos, tournamentData.type);
+            }
+            const averagePoints = totalPoints / tiedPlayers;
+            
+            // Assign position and points to all tied players
+            for (let j = 0; j < tiedPlayers; j++) {
+              sortedResults[i + j][positionField] = currentPosition;
+              sortedResults[i + j][pointsField] = averagePoints;
+              sortedResults[i + j].tied_players = tiedPlayers;
+            }
           }
           
           // Move to next position group
@@ -226,30 +247,51 @@ export const useSupabaseData = () => {
         }
       };
       
-      // Sort by gross scores and assign gross positions/points
-      // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
-      const grossSorted = [...results].sort((a, b) => 
-        tournamentData.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
-      );
-      assignPositionsWithTies(grossSorted, 'gross_score', 'gross_position', 'gross_points');
+      // Sort by gross scores/points and assign gross positions/points
+      let grossSorted;
+      let grossSortField;
+      if (tournamentData.format === 'Points') {
+        // For Points format, sort by points (higher points = better position)
+        grossSorted = [...results].sort((a, b) => b.gross_points - a.gross_points);
+        grossSortField = 'gross_points';
+      } else {
+        // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
+        grossSorted = [...results].sort((a, b) => 
+          tournamentData.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
+        );
+        grossSortField = 'gross_score';
+      }
+      assignPositionsWithTies(grossSorted, grossSortField, 'gross_position', 'gross_points');
       
-      // Sort by net scores and assign net positions/points
-      // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
-      const netSorted = [...results].sort((a, b) => 
-        tournamentData.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
-      );
-      assignPositionsWithTies(netSorted, 'net_score', 'net_position', 'net_points');
+      // Sort by net scores/points and assign net positions/points
+      let netSorted;
+      let netSortField;
+      if (tournamentData.format === 'Points') {
+        // For Points format, sort by points (higher points = better position)
+        netSorted = [...results].sort((a, b) => b.net_points - a.net_points);
+        netSortField = 'net_points';
+      } else {
+        // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
+        netSorted = [...results].sort((a, b) => 
+          tournamentData.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
+        );
+        netSortField = 'net_score';
+      }
+      assignPositionsWithTies(netSorted, netSortField, 'net_position', 'net_points');
       
       // Only create tournament after validation succeeds
       console.log('📝 Creating tournament in database...')
       tournament = await tournamentService.create(tournamentData)
       console.log('✅ Tournament created:', tournament)
       
-      // Add tournament_id to all results
-      const resultsWithTournamentId = results.map(result => ({
-        ...result,
-        tournament_id: tournament!.id
-      }))
+      // Add tournament_id to all results and clean up temporary fields
+      const resultsWithTournamentId = results.map(result => {
+        const { directPoints, ...cleanResult } = result;
+        return {
+          ...cleanResult,
+          tournament_id: tournament!.id
+        };
+      });
       
       // Bulk insert results
       console.log('💾 Saving tournament results to database:', resultsWithTournamentId.length, 'results')
