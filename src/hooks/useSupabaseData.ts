@@ -193,14 +193,20 @@ export const useSupabaseData = () => {
       }
       
       // Sort by gross scores and assign gross positions/points
-      const grossSorted = [...results].sort((a, b) => a.gross_score - b.gross_score);
+      // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
+      const grossSorted = [...results].sort((a, b) => 
+        tournamentData.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
+      );
       grossSorted.forEach((result, index) => {
         result.gross_position = index + 1;
         result.gross_points = pointsService.calculatePoints(result.gross_position, tournamentData.type);
       });
       
       // Sort by net scores and assign net positions/points
-      const netSorted = [...results].sort((a, b) => a.net_score - b.net_score);
+      // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
+      const netSorted = [...results].sort((a, b) => 
+        tournamentData.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
+      );
       netSorted.forEach((result, index) => {
         result.net_position = index + 1;
         result.net_points = pointsService.calculatePoints(result.net_position, tournamentData.type);
