@@ -1872,7 +1872,7 @@ const GolfTournamentSystem = () => {
                     <TrendingUp className="text-emerald-400" size={32} />
                     Championship Leaderboard
                   </h2>
-                  <p className="text-slate-300">Top 8 events count toward season standings</p>
+                  <p className="text-slate-300">Top 4 from each category qualify for Founders Cup</p>
                 </div>
                 
                 <div className="flex flex-wrap gap-4 items-center">
