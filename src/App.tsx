@@ -1011,8 +1011,8 @@ const GolfTournamentSystem = () => {
         {
           name: tournamentData.name,
           date: tournamentData.date,
-          type: tournamentData.type as 'Major' | 'Tour Event' | 'League' | 'SUPR',
-          format: tournamentData.format as 'Stroke Play' | 'Stableford'
+          type: tournamentData.type as 'Major' | 'Tour Event' | 'SUPR' | 'League Night',
+          format: tournamentData.format as 'Stroke Play' | 'Stableford' | 'Points'
         },
         processedPlayers
       );
