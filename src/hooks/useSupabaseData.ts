@@ -188,29 +188,57 @@ export const useSupabaseData = () => {
           handicap: handicap,
           gross_points: 0,     // Will be calculated after positions are determined
           net_points: 0,       // Will be calculated after positions are determined
-          tied_players: playerData.tied || 1
+          tied_players: 1 // Will be calculated in tie handling logic
         })
       }
+      
+      // Helper function to assign positions and handle ties
+      const assignPositionsWithTies = (sortedResults: any[], scoreField: string, positionField: string, pointsField: string) => {
+        let currentPosition = 1;
+        let i = 0;
+        
+        while (i < sortedResults.length) {
+          const currentScore = sortedResults[i][scoreField];
+          
+          // Find all players with the same score
+          let tiedPlayers = 1;
+          while (i + tiedPlayers < sortedResults.length && sortedResults[i + tiedPlayers][scoreField] === currentScore) {
+            tiedPlayers++;
+          }
+          
+          // Calculate total points for tied positions
+          let totalPoints = 0;
+          for (let pos = currentPosition; pos < currentPosition + tiedPlayers; pos++) {
+            totalPoints += pointsService.calculatePoints(pos, tournamentData.type);
+          }
+          const averagePoints = totalPoints / tiedPlayers;
+          
+          // Assign position and points to all tied players
+          for (let j = 0; j < tiedPlayers; j++) {
+            sortedResults[i + j][positionField] = currentPosition;
+            sortedResults[i + j][pointsField] = averagePoints;
+            sortedResults[i + j].tied_players = tiedPlayers;
+          }
+          
+          // Move to next position group
+          currentPosition += tiedPlayers;
+          i += tiedPlayers;
+        }
+      };
       
       // Sort by gross scores and assign gross positions/points
       // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
       const grossSorted = [...results].sort((a, b) => 
         tournamentData.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
       );
-      grossSorted.forEach((result, index) => {
-        result.gross_position = index + 1;
-        result.gross_points = pointsService.calculatePoints(result.gross_position, tournamentData.type);
-      });
+      assignPositionsWithTies(grossSorted, 'gross_score', 'gross_position', 'gross_points');
       
       // Sort by net scores and assign net positions/points
       // For Stableford, higher scores are better (descending sort), for stroke play lower scores are better (ascending sort)
       const netSorted = [...results].sort((a, b) => 
         tournamentData.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
       );
-      netSorted.forEach((result, index) => {
-        result.net_position = index + 1;
-        result.net_points = pointsService.calculatePoints(result.net_position, tournamentData.type);
-      });
+      assignPositionsWithTies(netSorted, 'net_score', 'net_position', 'net_points');
       
       // Only create tournament after validation succeeds
       console.log('📝 Creating tournament in database...')
