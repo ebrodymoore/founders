@@ -346,29 +346,29 @@ const GolfTournamentSystem = () => {
       { date: 'June 5–15', name: 'U.S. Open', type: 'Major' },
       { date: 'June 12', name: 'Supr Club #2', type: 'SUPR', venue: 'Outdoor' },
       { date: 'June 22–28', name: 'Indoor Tournament', type: 'Tour Event' },
-      { date: 'June 26', name: 'League Night #2', type: 'League' }
+      { date: 'June 26', name: 'League Night #2', type: 'League Night' }
     ],
     'JUNE': [
       { date: 'July 10–20', name: 'Open Championship', type: 'Major' },
       { date: 'July 10', name: 'Supr Club #3', type: 'SUPR', venue: 'Outdoor' },
-      { date: 'July 24', name: 'League Night #3', type: 'League' },
+      { date: 'July 24', name: 'League Night #3', type: 'League Night' },
       { date: 'July 27–Aug 2', name: 'Indoor Tournament', type: 'Tour Event' }
     ],
     'JULY': [
       { date: 'Aug 7', name: 'The Players', type: 'Major' },
       { date: 'Aug 10–16', name: 'Indoor Tournament', type: 'Tour Event' },
-      { date: 'Aug 21', name: 'League Night #4', type: 'League' },
+      { date: 'Aug 21', name: 'League Night #4', type: 'League Night' },
       { date: 'Aug 24–30', name: 'Indoor Tournament', type: 'Tour Event' }
     ],
     'AUG': [
       { date: 'Sept 4', name: 'Supr Club #5', type: 'SUPR', venue: 'Outdoor' },
       { date: 'Sept 7–13', name: 'Founders Cup', type: 'Tour Event', subtitle: 'Ryder Cup Team Event' },
-      { date: 'Sept 18', name: 'League Night #5', type: 'League' },
+      { date: 'Sept 18', name: 'League Night #5', type: 'League Night' },
       { date: 'Sept 21–27', name: 'Indoor Tournament', type: 'Tour Event' }
     ],
     'SEPT': [
       { date: 'Oct 2', name: 'Supr Club #6', type: 'SUPR', venue: 'Outdoor' },
-      { date: 'Oct 7', name: 'League Night #6', type: 'League' },
+      { date: 'Oct 7', name: 'League Night #6', type: 'League Night' },
       { date: 'Oct 10', name: 'Playoff', type: 'Major', subtitle: 'Top 6 competitors' }
     ]
   };
