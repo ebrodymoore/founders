@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, Trophy, Calendar, Users, TrendingUp, Award, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Medal, Crown, Settings, Trash2, Plus } from 'lucide-react';
+import { Upload, Trophy, Calendar, Users, TrendingUp, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Settings, Trash2, Plus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { useSupabaseData } from './hooks/useSupabaseData';
@@ -1063,18 +1063,14 @@ const GolfTournamentSystem = () => {
     }
   }, [selectedTournament, selectedTournamentData, getTournamentResults]);
 
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="text-yellow-500 drop-shadow-lg" size={20} />;
-    if (rank === 2) return <Medal className="text-slate-400 drop-shadow-lg" size={20} />;
-    if (rank === 3) return <Award className="text-amber-600 drop-shadow-lg" size={20} />;
+  const getRankIcon = () => {
+    // No icons for playoff-style leaderboard
     return null;
   };
 
   const getPositionBadge = (position: number) => {
-    if (position === 1) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-500/50';
-    if (position === 2) return 'bg-gradient-to-r from-gray-300 to-gray-500 text-white shadow-lg shadow-gray-400/50';
-    if (position === 3) return 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-600/50';
-    if (position <= 10) return 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/50';
+    if (position <= 4) return 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/50';
+    if (position <= 10) return 'bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/50';
     return 'bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/50';
   };
 
@@ -1951,18 +1947,18 @@ const GolfTournamentSystem = () => {
                   <tbody>
                     {getFilteredLeaderboard().map((player: any, index) => (
                       <tr key={player.name} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                        index <= 2 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                        index <= 3 ? 'bg-gradient-to-r from-emerald-500/10 to-transparent border-b-emerald-500/30' : ''
+                      } ${
+                        index === 3 ? 'border-b-4 border-b-emerald-500/50' : ''
                       }`} style={{animationDelay: `${index * 100}ms`}}>
                         <td className="p-4">
                           <div className="flex items-center gap-3">
                             <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(index + 1)}`}>
                               {index + 1}
                             </div>
-                            {getRankIcon(index + 1)}
+                            {getRankIcon()}
                             <div className={`w-3 h-3 rounded-full ${
-                              index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
-                              index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                              index === 2 ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-lg shadow-emerald-600/50' :
+                              index <= 3 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50' :
                               'bg-gradient-to-r from-blue-400 to-blue-600'
                             }`}></div>
                             <button
@@ -2153,7 +2149,9 @@ const GolfTournamentSystem = () => {
                             
                             return (
                           <tr key={index} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                            position <= 3 ? 'bg-gradient-to-r from-white/5 to-transparent' : ''
+                            position <= 4 ? 'bg-gradient-to-r from-emerald-500/10 to-transparent border-b-emerald-500/30' : ''
+                          } ${
+                            position === 4 ? 'border-b-4 border-b-emerald-500/50' : ''
                           }`} style={{animationDelay: `${index * 50}ms`}}>
                             <td className="p-4 font-bold text-white">
                               <div className="flex items-center gap-3">
@@ -2165,15 +2163,13 @@ const GolfTournamentSystem = () => {
                                     T{result.tied_players}
                                   </span>
                                 )}
-                                {getRankIcon(position)}
+                                {getRankIcon()}
                               </div>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${
-                                  position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50' :
-                                  position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 shadow-lg shadow-gray-400/50' :
-                                  position === 3 ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-lg shadow-emerald-600/50' :
+                                  position <= 4 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50' :
                                   'bg-gradient-to-r from-blue-400 to-blue-600'
                                 }`}></div>
                                 <span className="text-white font-medium group-hover:text-emerald-300 transition-colors duration-300">
