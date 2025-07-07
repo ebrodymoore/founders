@@ -954,16 +954,19 @@ const GolfTournamentSystem = () => {
             position: index + 1 // Will be recalculated in the service
           };
         } else if (tournamentData.format === 'Points') {
-          const points = parseInt(player['Points'] || player.points || '0') || 0;
+          const grossPoints = parseInt(player['Gross Points'] || player['gross points'] || player.grossPoints || '0') || 0;
+          const netPoints = parseInt(player['Net Points'] || player['net points'] || player.netPoints || '0') || 0;
           
           return {
             'Player Name': trackmanId,
             name: playerInfo.name,
-            net: points, // Store points in net field for processing
-            gross: points, // Store same points in gross field
+            net: 0, // Not needed for points format
+            gross: 0, // Not needed for points format
             handicap: 0, // No handicap needed for direct points
             position: index + 1, // Will be recalculated in the service
-            directPoints: points // Flag to indicate this uses direct points
+            grossPoints: grossPoints, // Store direct points for gross leaderboard
+            netPoints: netPoints, // Store direct points for net leaderboard
+            directPoints: true // Flag to indicate this uses direct points
           };
         } else {
           // Score is relative to par (e.g., +2, 0, -2)
@@ -1382,7 +1385,7 @@ const GolfTournamentSystem = () => {
                           uploadData.format === 'Stableford' 
                             ? "Player Name,Club,Total,Course Handicap\nJohn Smith,Sylvan,42,8\nJane Doe,8th,38,5"
                             : uploadData.format === 'Points'
-                            ? "Player Name,Points\nJohn Smith,100\nJane Doe,85"
+                            ? "Player Name,Gross Points,Net Points\nJohn Smith,100,95\nJane Doe,85,80"
                             : "Player Name,Club,Score,Course Handicap\nJohn Smith,Sylvan,-2,4\nJane Doe,8th,1,8"
                         }
                       />
