@@ -2131,7 +2131,7 @@ const GolfTournamentSystem = () => {
                             const winner = sortedResults[0];
                             const score = tournamentLeaderboardType === 'net' ? winner?.net_score : winner?.gross_score;
                             return score;
-                          })()} {selectedTournamentData?.format === 'Stableford' ? 'pts' : ''}
+                          })()} 
                         </div>
                         {isAdmin && (
                           <button
@@ -2241,7 +2241,7 @@ const GolfTournamentSystem = () => {
                             </td>
                             <td className="p-4 text-white font-medium text-lg">{result.gross_score}</td>
                             <td className="p-4 text-emerald-400 font-medium text-lg">
-                              {result.net_score}{selectedTournamentData?.format === 'Stableford' ? ' pts' : ''}
+                              {result.net_score}
                             </td>
                             <td className="p-4 text-slate-300">{result.handicap}</td>
                             <td className="p-4">
