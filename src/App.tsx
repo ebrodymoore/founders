@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Upload, Trophy, Calendar, Users, TrendingUp, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Settings, Trash2, Plus } from 'lucide-react';
+import { Upload, Trophy, Calendar, Users, TrendingUp, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Settings, Trash2, Plus, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { useSupabaseData } from './hooks/useSupabaseData';
+import { recalculationService } from './services/supabaseService';
 
 
 
@@ -63,6 +64,7 @@ const GolfTournamentSystem = () => {
   const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}>>([]);
   const [showNewPlayersModal, setShowNewPlayersModal] = useState(false);
   const [pendingTournamentData, setPendingTournamentData] = useState<any>(null);
+  const [isRecalculating, setIsRecalculating] = useState(false);
   
   // CSV Upload state
   const [csvData, setCsvData] = useState<Array<{trackman_id: string, display_name: string, club: 'Sylvan' | '8th'}>>([]);
@@ -479,6 +481,25 @@ const GolfTournamentSystem = () => {
   const handleLogout = () => {
     setIsAdmin(false);
     setShowUpload(false);
+  };
+
+  const handleRecalculateAll = async () => {
+    setIsRecalculating(true);
+    try {
+      const results = await recalculationService.recalculateAllTournaments();
+      const successCount = results.filter(r => r.success).length;
+      const failureCount = results.filter(r => !r.success).length;
+      
+      if (failureCount === 0) {
+        showNotification(`Successfully recalculated ${successCount} tournaments`, 'success');
+      } else {
+        showNotification(`Recalculated ${successCount} tournaments, ${failureCount} failed`, 'error');
+      }
+    } catch (error) {
+      showNotification('Failed to recalculate tournaments', 'error');
+    } finally {
+      setIsRecalculating(false);
+    }
   };
 
   const parseCSV = (csvText: string) => {
@@ -1210,6 +1231,14 @@ const GolfTournamentSystem = () => {
                 >
                   <Settings className="inline mr-3" size={24} />
                   Manage Mappings
+                </button>
+                <button
+                  onClick={handleRecalculateAll}
+                  disabled={isRecalculating}
+                  className="group px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-orange-500 to-yellow-500 text-white hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  <RefreshCw className={`inline mr-3 ${isRecalculating ? 'animate-spin' : ''}`} size={24} />
+                  {isRecalculating ? 'Recalculating...' : 'Recalculate Points'}
                 </button>
                 <button
                   onClick={handleLogout}

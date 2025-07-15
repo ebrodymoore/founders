@@ -403,3 +403,108 @@ export const pointsService = {
     return points[position] || (position <= 20 ? Math.max(30 - position, 5) : 0)
   }
 }
+
+// Tournament recalculation service
+export const recalculationService = {
+  async recalculateTournament(tournamentId: string) {
+    try {
+      // Get tournament data
+      const tournament = await tournamentService.getById(tournamentId)
+      if (!tournament) {
+        throw new Error('Tournament not found')
+      }
+
+      // Get all results for this tournament
+      const results = await tournamentResultService.getByTournament(tournamentId)
+      if (!results || results.length === 0) {
+        throw new Error('No results found for this tournament')
+      }
+
+      // Use the same tie-handling logic from useSupabaseData
+      const assignPositionsWithTies = (sortedResults: any[], scoreField: string, positionField: string, pointsField: string) => {
+        let currentPosition = 1;
+        let i = 0;
+        
+        while (i < sortedResults.length) {
+          const currentScore = sortedResults[i][scoreField];
+          
+          // Find all players with the same score (using tolerance for floating-point comparison)
+          let tiedPlayers = 1;
+          while (i + tiedPlayers < sortedResults.length && Math.abs(sortedResults[i + tiedPlayers][scoreField] - currentScore) < 0.001) {
+            tiedPlayers++;
+          }
+          
+          // Calculate total points for tied positions and distribute evenly
+          let totalPoints = 0;
+          for (let pos = currentPosition; pos < currentPosition + tiedPlayers; pos++) {
+            totalPoints += pointsService.calculatePoints(pos, tournament.type);
+          }
+          const averagePoints = totalPoints / tiedPlayers;
+          
+          // Assign position and points to all tied players
+          for (let j = 0; j < tiedPlayers; j++) {
+            sortedResults[i + j][positionField] = currentPosition;
+            sortedResults[i + j][pointsField] = averagePoints;
+            sortedResults[i + j].tied_players = tiedPlayers;
+          }
+          
+          // Move to next position group
+          currentPosition += tiedPlayers;
+          i += tiedPlayers;
+        }
+      };
+
+      // Recalculate gross positions and points
+      const grossSorted = [...results].sort((a, b) => 
+        tournament.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
+      );
+      assignPositionsWithTies(grossSorted, 'gross_score', 'gross_position', 'gross_points');
+
+      // Recalculate net positions and points
+      const netSorted = [...results].sort((a, b) => 
+        tournament.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
+      );
+      assignPositionsWithTies(netSorted, 'net_score', 'net_position', 'net_points');
+
+      // Update all results in the database
+      const updates = results.map(result => ({
+        id: result.id,
+        gross_position: result.gross_position,
+        net_position: result.net_position,
+        gross_points: result.gross_points,
+        net_points: result.net_points,
+        tied_players: result.tied_players
+      }));
+
+      for (const update of updates) {
+        await tournamentResultService.update(update.id, update);
+      }
+
+      return { success: true, updatedResults: updates.length };
+    } catch (error) {
+      console.error('Error recalculating tournament:', error);
+      throw error;
+    }
+  },
+
+  async recalculateAllTournaments() {
+    try {
+      const tournaments = await tournamentService.getAll();
+      const results = [];
+      
+      for (const tournament of tournaments) {
+        try {
+          const result = await this.recalculateTournament(tournament.id);
+          results.push({ tournamentId: tournament.id, name: tournament.name, ...result });
+        } catch (error) {
+          results.push({ tournamentId: tournament.id, name: tournament.name, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+        }
+      }
+      
+      return results;
+    } catch (error) {
+      console.error('Error recalculating all tournaments:', error);
+      throw error;
+    }
+  }
+}
