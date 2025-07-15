@@ -211,9 +211,9 @@ export const useSupabaseData = () => {
         while (i < sortedResults.length) {
           const currentScore = sortedResults[i][scoreField];
           
-          // Find all players with the same score
+          // Find all players with the same score (using tolerance for floating-point comparison)
           let tiedPlayers = 1;
-          while (i + tiedPlayers < sortedResults.length && sortedResults[i + tiedPlayers][scoreField] === currentScore) {
+          while (i + tiedPlayers < sortedResults.length && Math.abs(sortedResults[i + tiedPlayers][scoreField] - currentScore) < 0.001) {
             tiedPlayers++;
           }
           
