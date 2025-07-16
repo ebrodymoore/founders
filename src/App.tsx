@@ -2245,9 +2245,6 @@ const GolfTournamentSystem = () => {
                                   {typeof points === 'number' ? points.toFixed(2) : points}
                                 </span>
                                 <span className="text-xs text-yellow-300">pts</span>
-                                {result.tied_players && result.tied_players > 1 && (
-                                  <span className="text-xs text-slate-400 bg-gray-400/20 px-1 py-0.5 rounded">(split)</span>
-                                )}
                               </div>
                             </td>
                           </tr>
