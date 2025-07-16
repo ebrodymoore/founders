@@ -2211,11 +2211,6 @@ const GolfTournamentSystem = () => {
                                 <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getPositionBadge(position)}`}>
                                   {position}
                                 </div>
-                                {result.tied_players && result.tied_players > 1 && (
-                                  <span className="text-xs text-yellow-400 bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
-                                    T{result.tied_players}
-                                  </span>
-                                )}
                                 {getRankIcon()}
                               </div>
                             </td>
