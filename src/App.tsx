@@ -61,7 +61,7 @@ const GolfTournamentSystem = () => {
   const [showPlayerDetails, setShowPlayerDetails] = useState(false);
   const [showMappings, setShowMappings] = useState(false);
   const [newMapping, setNewMapping] = useState({ trackmanId: '', name: '', club: 'Sylvan' });
-  const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}>>([]);
+  const [newPlayersFound, setNewPlayersFound] = useState<Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th', ignored?: boolean}>>([]);
   const [showNewPlayersModal, setShowNewPlayersModal] = useState(false);
   const [pendingTournamentData, setPendingTournamentData] = useState<any>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
@@ -234,8 +234,8 @@ const GolfTournamentSystem = () => {
   };
 
   // Function to detect new players in uploaded tournament data
-  const detectNewPlayers = (players: any[]): Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}> => {
-    const newPlayers: Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th'}> = [];
+  const detectNewPlayers = (players: any[]): Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th', ignored?: boolean}> => {
+    const newPlayers: Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th', ignored?: boolean}> = [];
     
     players.forEach(player => {
       const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
@@ -253,7 +253,8 @@ const GolfTournamentSystem = () => {
           newPlayers.push({
             trackmanId: trackmanId,
             suggestedName: trackmanId, // Use trackmanId as suggested display name
-            club: 'Sylvan' // Default to Sylvan, admin can change in modal
+            club: 'Sylvan', // Default to Sylvan, admin can change in modal
+            ignored: false // Default to not ignored
           });
         }
       }
@@ -265,8 +266,9 @@ const GolfTournamentSystem = () => {
   // Function to handle new players modal confirmation
   const handleNewPlayersConfirm = async () => {
     try {
-      // Add all new players to database
-      for (const newPlayer of newPlayersFound) {
+      // Add only non-ignored new players to database
+      const playersToAdd = newPlayersFound.filter(player => !player.ignored);
+      for (const newPlayer of playersToAdd) {
         await addPlayer(newPlayer.trackmanId, newPlayer.suggestedName, newPlayer.club);
       }
       
@@ -2417,53 +2419,76 @@ const GolfTournamentSystem = () => {
               <div className="mb-6">
                 <p className="text-slate-300 text-lg leading-relaxed">
                   The following TrackmanIDs were found in the uploaded tournament but don't exist in the database yet. 
-                  Please review and confirm the display names for these new players:
+                  Please review and confirm the display names for these new players, or ignore any you don't want to add:
                 </p>
               </div>
 
               <div className="space-y-4 mb-8">
                 {newPlayersFound.map((newPlayer, index) => (
-                  <div key={newPlayer.trackmanId} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div key={newPlayer.trackmanId} className={`bg-slate-800/90 backdrop-blur-sm rounded-xl p-6 border transition-all duration-300 ${newPlayer.ignored ? 'border-red-500/50 bg-red-900/20' : 'border-white/10'}`}>
                     <div className="grid grid-cols-12 gap-4 items-center">
                       <div className="col-span-4">
                         <div className="text-slate-400 text-sm mb-2">TrackmanID (from upload)</div>
-                        <div className="text-white font-mono bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600">
+                        <div className={`text-white font-mono bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600 ${newPlayer.ignored ? 'opacity-50' : ''}`}>
                           {newPlayer.trackmanId}
                         </div>
                       </div>
                       <div className="col-span-1 text-center">
-                        <div className="text-slate-400">→</div>
+                        <div className={`text-slate-400 ${newPlayer.ignored ? 'opacity-50' : ''}`}>→</div>
                       </div>
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <div className="text-slate-400 text-sm mb-2">Display Name</div>
                         <input
                           type="text"
                           value={newPlayer.suggestedName}
+                          disabled={newPlayer.ignored}
                           onChange={(e) => {
                             const updatedPlayers = [...newPlayersFound];
                             updatedPlayers[index].suggestedName = e.target.value;
                             setNewPlayersFound(updatedPlayers);
                           }}
-                          className="w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                          className={`w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white ${newPlayer.ignored ? 'opacity-50 cursor-not-allowed' : ''}`}
                           placeholder="Enter display name..."
                         />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                         <div className="text-slate-400 text-sm mb-2">Club</div>
                         <select
                           value={newPlayer.club}
+                          disabled={newPlayer.ignored}
                           onChange={(e) => {
                             const updatedPlayers = [...newPlayersFound];
                             updatedPlayers[index].club = e.target.value as 'Sylvan' | '8th';
                             setNewPlayersFound(updatedPlayers);
                           }}
-                          className="w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white"
+                          className={`w-full px-3 py-2 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white ${newPlayer.ignored ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           <option value="Sylvan" className="bg-gray-800">Sylvan</option>
                           <option value="8th" className="bg-gray-800">8th</option>
                         </select>
                       </div>
+                      <div className="col-span-2 flex justify-end">
+                        <button
+                          onClick={() => {
+                            const updatedPlayers = [...newPlayersFound];
+                            updatedPlayers[index].ignored = !updatedPlayers[index].ignored;
+                            setNewPlayersFound(updatedPlayers);
+                          }}
+                          className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 ${
+                            newPlayer.ignored 
+                              ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/50' 
+                              : 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/50'
+                          }`}
+                        >
+                          {newPlayer.ignored ? 'Include' : 'Ignore'}
+                        </button>
+                      </div>
                     </div>
+                    {newPlayer.ignored && (
+                      <div className="mt-3 text-red-400 text-sm italic">
+                        This player will be ignored and not added to the database.
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -2479,7 +2504,9 @@ const GolfTournamentSystem = () => {
                   onClick={handleNewPlayersConfirm}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/25"
                 >
-                  Add Players & Continue Upload
+                  {newPlayersFound.filter(p => !p.ignored).length === newPlayersFound.length 
+                    ? 'Add All Players & Continue Upload' 
+                    : `Add ${newPlayersFound.filter(p => !p.ignored).length} Players & Continue Upload`}
                 </button>
               </div>
             </div>
