@@ -149,14 +149,23 @@ export const useSupabaseData = () => {
       const results: Array<Omit<TournamentResult, 'id' | 'created_at' | 'updated_at' | 'tournament_id'> & { directPoints?: boolean }> = []
       
       for (const playerData of playersData) {
-        const trackmanId = playerData['Player Name'] || playerData['Name'] || playerData.name || playerData['Player'] || 'Unknown'
+        const playerName = playerData['Player Name'] || playerData['Name'] || playerData.name || playerData['Player'] || 'Unknown'
         
-        // Get or create player
-        let player = await playerService.getByTrackmanId(trackmanId)
+        // Get or create player - now using display name matching
+        let player = await playerService.getByDisplayName(playerName)
         if (!player) {
-          // Create new player with fallback data
-          const fallbackName = trackmanId
-          player = await playerService.create(trackmanId, fallbackName, 'Sylvan')
+          // Try fuzzy search as fallback
+          const searchResults = await playerService.searchByName(playerName)
+          if (searchResults.length === 1) {
+            // If only one match found, use it
+            player = searchResults[0]
+          } else if (searchResults.length > 1) {
+            // Multiple matches found - use exact match or first result
+            player = searchResults.find(p => p.display_name.toLowerCase() === playerName.toLowerCase()) || searchResults[0]
+          } else {
+            // No matches found - create new player with name as both trackman_id and display_name
+            player = await playerService.create(playerName, playerName, 'Sylvan')
+          }
         }
         
         // Validate data before processing
@@ -170,7 +179,7 @@ export const useSupabaseData = () => {
         const directPoints = playerData.directPoints || (grossPoints > 0 || netPoints > 0);
         
         console.log('🔍 Player data validation:', {
-          trackmanId,
+          playerName,
           gross: playerData.gross,
           net: playerData.net,
           handicap: playerData.handicap,
@@ -185,8 +194,8 @@ export const useSupabaseData = () => {
         
         // For Points format, allow missing scores if points are provided directly
         if (tournamentData.format !== 'Points' && (grossScore === null || grossScore === undefined || isNaN(grossScore))) {
-          console.error('❌ Invalid gross score for player:', trackmanId, grossScore);
-          throw new Error(`Invalid gross score for player ${trackmanId}: ${grossScore}`);
+          console.error('❌ Invalid gross score for player:', playerName, grossScore);
+          throw new Error(`Invalid gross score for player ${playerName}: ${grossScore}`);
         }
         
         results.push({

@@ -26,6 +26,30 @@ export const playerService = {
     return data
   },
 
+  // Get player by display name (case-insensitive)
+  async getByDisplayName(displayName: string): Promise<Player | null> {
+    const { data, error } = await supabase
+      .from('players')
+      .select('*')
+      .ilike('display_name', displayName)
+      .single()
+    
+    if (error && error.code !== 'PGRST116') throw error
+    return data
+  },
+
+  // Search players by name (fuzzy matching for variations)
+  async searchByName(name: string): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from('players')
+      .select('*')
+      .ilike('display_name', `%${name}%`)
+      .order('display_name')
+    
+    if (error) throw error
+    return data || []
+  },
+
   // Create new player
   async create(trackmanId: string, displayName: string, club: 'Sylvan' | '8th'): Promise<Player> {
     const { data, error } = await supabase

@@ -238,21 +238,23 @@ const GolfTournamentSystem = () => {
     const newPlayers: Array<{trackmanId: string, suggestedName: string, club: 'Sylvan' | '8th', ignored?: boolean}> = [];
     
     players.forEach(player => {
-      const trackmanId = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
+      const playerName = player['Player Name'] || player['Name'] || player.name || player['Player'] || 'Unknown';
       
-      // Skip if trackmanId is 'Unknown' or empty
-      if (!trackmanId || trackmanId === 'Unknown') return;
+      // Skip if playerName is 'Unknown' or empty
+      if (!playerName || playerName === 'Unknown') return;
       
-      // Check if player already exists in Supabase
-      const existingPlayer = supabasePlayers.find(p => p.trackman_id === trackmanId);
+      // Check if player already exists in Supabase by display name (case-insensitive)
+      const existingPlayer = supabasePlayers.find(p => 
+        p.display_name.toLowerCase() === playerName.toLowerCase()
+      );
       
       if (!existingPlayer) {
         // This is a new player - add to list if not already there
-        const alreadyFound = newPlayers.some(np => np.trackmanId === trackmanId);
+        const alreadyFound = newPlayers.some(np => np.trackmanId === playerName);
         if (!alreadyFound) {
           newPlayers.push({
-            trackmanId: trackmanId,
-            suggestedName: trackmanId, // Use trackmanId as suggested display name
+            trackmanId: playerName, // Use player name as trackman_id for new players
+            suggestedName: playerName, // Use player name as suggested display name
             club: 'Sylvan', // Default to Sylvan, admin can change in modal
             ignored: false // Default to not ignored
           });
@@ -2418,7 +2420,7 @@ const GolfTournamentSystem = () => {
               
               <div className="mb-6">
                 <p className="text-slate-300 text-lg leading-relaxed">
-                  The following TrackmanIDs were found in the uploaded tournament but don't exist in the database yet. 
+                  The following player names were found in the uploaded tournament but don't exist in the database yet. 
                   Please review and confirm the display names for these new players, or ignore any you don't want to add:
                 </p>
               </div>
@@ -2428,7 +2430,7 @@ const GolfTournamentSystem = () => {
                   <div key={newPlayer.trackmanId} className={`bg-slate-800/90 backdrop-blur-sm rounded-xl p-6 border transition-all duration-300 ${newPlayer.ignored ? 'border-red-500/50 bg-red-900/20' : 'border-white/10'}`}>
                     <div className="grid grid-cols-12 gap-4 items-center">
                       <div className="col-span-4">
-                        <div className="text-slate-400 text-sm mb-2">TrackmanID (from upload)</div>
+                        <div className="text-slate-400 text-sm mb-2">Player Name (from upload)</div>
                         <div className={`text-white font-mono bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600 ${newPlayer.ignored ? 'opacity-50' : ''}`}>
                           {newPlayer.trackmanId}
                         </div>
