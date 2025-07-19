@@ -81,7 +81,7 @@ const GolfTournamentSystem = () => {
     netPoints: number;
   }>>([]);
   const [selectedPlayerForPoints, setSelectedPlayerForPoints] = useState<any | null>(null);
-  const [tempGrossPoints, setTempGrossPoints] = useState<number>(0);
+  const [tempGrossPoints, setTempGrossPoints] = useState<number | ''>('');
   const [tempNetPoints, setTempNetPoints] = useState<number>(0);
   const [playerSearchQuery, setPlayerSearchQuery] = useState<string>('');
   // Use Supabase notification system
@@ -236,7 +236,16 @@ const GolfTournamentSystem = () => {
 
   // Function to get player info from Trackman ID using Supabase
   const getPlayerFromTrackmanId = (trackmanId: string): {name: string, club: string} => {
-    const player = supabasePlayers.find(p => p.trackman_id === trackmanId);
+    // First try exact trackman_id match
+    let player = supabasePlayers.find(p => p.trackman_id === trackmanId);
+    
+    // If not found, try display name match (case-insensitive)
+    if (!player) {
+      player = supabasePlayers.find(p => 
+        p.display_name.toLowerCase() === trackmanId.toLowerCase()
+      );
+    }
+    
     if (player) {
       return { name: player.display_name, club: player.club };
     }
@@ -309,7 +318,7 @@ const GolfTournamentSystem = () => {
 
   // Direct Points Helper Functions
   const addPlayerToDirectPoints = () => {
-    if (selectedPlayerForPoints && (tempGrossPoints > 0 || tempNetPoints > 0)) {
+    if (selectedPlayerForPoints && ((typeof tempGrossPoints === 'number' && tempGrossPoints > 0) || tempNetPoints > 0)) {
       // Check if player already exists in entries
       const existingEntryIndex = directPointsEntries.findIndex(
         entry => entry.player.id === selectedPlayerForPoints.id
@@ -320,7 +329,7 @@ const GolfTournamentSystem = () => {
         const updatedEntries = [...directPointsEntries];
         updatedEntries[existingEntryIndex] = {
           player: selectedPlayerForPoints,
-          grossPoints: tempGrossPoints,
+          grossPoints: typeof tempGrossPoints === 'number' ? tempGrossPoints : 0,
           netPoints: tempNetPoints
         };
         setDirectPointsEntries(updatedEntries);
@@ -328,14 +337,14 @@ const GolfTournamentSystem = () => {
         // Add new entry
         setDirectPointsEntries([...directPointsEntries, {
           player: selectedPlayerForPoints,
-          grossPoints: tempGrossPoints,
+          grossPoints: typeof tempGrossPoints === 'number' ? tempGrossPoints : 0,
           netPoints: tempNetPoints
         }]);
       }
       
       // Reset form
       setSelectedPlayerForPoints(null);
-      setTempGrossPoints(0);
+      setTempGrossPoints('');
       setTempNetPoints(0);
       setPlayerSearchQuery('');
     }
@@ -986,6 +995,7 @@ const GolfTournamentSystem = () => {
         // For direct points format, convert the entries to CSV format
         if (uploadData.format === 'Points' && directPointsEntries.length > 0) {
           csvDataToProcess = convertDirectPointsToCSV();
+          console.log('🎯 Direct Points CSV Data:', csvDataToProcess);
         }
         
         if (csvDataToProcess) {
@@ -1068,8 +1078,8 @@ const GolfTournamentSystem = () => {
             position: index + 1 // Will be recalculated in the service
           };
         } else if (tournamentData.format === 'Points') {
-          const grossPoints = parseInt(player['Gross Points'] || player['gross points'] || player.grossPoints || '0') || 0;
-          const netPoints = parseInt(player['Net Points'] || player['net points'] || player.netPoints || '0') || 0;
+          const grossPoints = parseFloat(player['Gross Points'] || player['gross points'] || player.grossPoints || '0') || 0;
+          const netPoints = parseFloat(player['Net Points'] || player['net points'] || player.netPoints || '0') || 0;
           
           return {
             'Player Name': trackmanId,
@@ -1120,7 +1130,10 @@ const GolfTournamentSystem = () => {
         name: p.name,
         net: p.net,
         gross: p.gross,
-        handicap: p.handicap
+        handicap: p.handicap,
+        grossPoints: p.grossPoints,
+        netPoints: p.netPoints,
+        directPoints: p.directPoints
       })));
 
       // Use Supabase service to upload tournament with results
@@ -1138,6 +1151,12 @@ const GolfTournamentSystem = () => {
       setUploadData({ name: '', date: '', type: 'Tour Event', format: 'Stroke Play', par: 72, csvData: '', uploadMethod: 'csv' });
       setSelectedFile(null);
       setShowUpload(false);
+      // Clear direct points entries
+      setDirectPointsEntries([]);
+      setSelectedPlayerForPoints(null);
+      setTempGrossPoints('');
+      setTempNetPoints(0);
+      setPlayerSearchQuery('');
       
     } catch (error) {
       console.error('Error uploading tournament:', error);
@@ -1554,10 +1573,11 @@ const GolfTournamentSystem = () => {
                             <input
                               type="number"
                               min="0"
+                              step="0.01"
                               value={tempGrossPoints}
-                              onChange={(e) => setTempGrossPoints(parseInt(e.target.value) || 0)}
+                              onChange={(e) => setTempGrossPoints(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                               className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
-                              placeholder="0"
+                              placeholder="0.00"
                             />
                           </div>
                           
@@ -1566,17 +1586,18 @@ const GolfTournamentSystem = () => {
                             <input
                               type="number"
                               min="0"
+                              step="0.01"
                               value={tempNetPoints}
-                              onChange={(e) => setTempNetPoints(parseInt(e.target.value) || 0)}
+                              onChange={(e) => setTempNetPoints(parseFloat(e.target.value) || 0)}
                               className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
-                              placeholder="0"
+                              placeholder="0.00"
                             />
                           </div>
                           
                           <div>
                             <button
                               onClick={addPlayerToDirectPoints}
-                              disabled={!selectedPlayerForPoints || (tempGrossPoints === 0 && tempNetPoints === 0)}
+                              disabled={!selectedPlayerForPoints || ((tempGrossPoints === '' || tempGrossPoints === 0) && tempNetPoints === 0)}
                               className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                               <Plus size={20} />
@@ -1662,7 +1683,7 @@ const GolfTournamentSystem = () => {
                       // Clear direct points entries
                       setDirectPointsEntries([]);
                       setSelectedPlayerForPoints(null);
-                      setTempGrossPoints(0);
+                      setTempGrossPoints('');
                       setTempNetPoints(0);
                       setPlayerSearchQuery('');
                     }}
