@@ -73,6 +73,17 @@ const GolfTournamentSystem = () => {
   const [csvLoading, setCsvLoading] = useState(false);
   const [showCsvPreview, setShowCsvPreview] = useState(false);
   const [tournamentResults, setTournamentResults] = useState<any[]>([]);
+  
+  // Direct Points state
+  const [directPointsEntries, setDirectPointsEntries] = useState<Array<{
+    player: any;
+    grossPoints: number;
+    netPoints: number;
+  }>>([]);
+  const [selectedPlayerForPoints, setSelectedPlayerForPoints] = useState<any | null>(null);
+  const [tempGrossPoints, setTempGrossPoints] = useState<number>(0);
+  const [tempNetPoints, setTempNetPoints] = useState<number>(0);
+  const [playerSearchQuery, setPlayerSearchQuery] = useState<string>('');
   // Use Supabase notification system
   const notification = supabaseNotification;
 
@@ -294,6 +305,65 @@ const GolfTournamentSystem = () => {
     setNewPlayersFound([]);
     setPendingTournamentData(null);
     setIsLoading(false);
+  };
+
+  // Direct Points Helper Functions
+  const addPlayerToDirectPoints = () => {
+    if (selectedPlayerForPoints && (tempGrossPoints > 0 || tempNetPoints > 0)) {
+      // Check if player already exists in entries
+      const existingEntryIndex = directPointsEntries.findIndex(
+        entry => entry.player.id === selectedPlayerForPoints.id
+      );
+      
+      if (existingEntryIndex >= 0) {
+        // Update existing entry
+        const updatedEntries = [...directPointsEntries];
+        updatedEntries[existingEntryIndex] = {
+          player: selectedPlayerForPoints,
+          grossPoints: tempGrossPoints,
+          netPoints: tempNetPoints
+        };
+        setDirectPointsEntries(updatedEntries);
+      } else {
+        // Add new entry
+        setDirectPointsEntries([...directPointsEntries, {
+          player: selectedPlayerForPoints,
+          grossPoints: tempGrossPoints,
+          netPoints: tempNetPoints
+        }]);
+      }
+      
+      // Reset form
+      setSelectedPlayerForPoints(null);
+      setTempGrossPoints(0);
+      setTempNetPoints(0);
+      setPlayerSearchQuery('');
+    }
+  };
+
+  const removePlayerFromDirectPoints = (playerId: string) => {
+    setDirectPointsEntries(directPointsEntries.filter(entry => entry.player.id !== playerId));
+  };
+
+  const convertDirectPointsToCSV = () => {
+    const csvData = directPointsEntries.map(entry => 
+      `${entry.player.display_name},${entry.grossPoints},${entry.netPoints}`
+    ).join('\n');
+    
+    if (csvData) {
+      const header = 'Player Name,Gross Points,Net Points';
+      return `${header}\n${csvData}`;
+    }
+    return '';
+  };
+
+  // Filter players for search dropdown
+  const getFilteredPlayers = () => {
+    if (!playerSearchQuery) return supabasePlayers;
+    return supabasePlayers.filter(player => 
+      player.display_name.toLowerCase().includes(playerSearchQuery.toLowerCase()) ||
+      player.trackman_id.toLowerCase().includes(playerSearchQuery.toLowerCase())
+    );
   };
 
   // Function to determine event status based on current date
@@ -910,14 +980,27 @@ const GolfTournamentSystem = () => {
           setIsLoading(false);
           return;
         }
-      } else if (uploadData.uploadMethod === 'csv' && uploadData.csvData) {
-        // Use flexible parsing for SUPR and League events, standard parsing for others
-        if (uploadData.type === 'SUPR') {
-          players = parseSuprCSV(uploadData.csvData);
-        } else if (uploadData.type === 'League') {
-          players = parseLeagueCSV(uploadData.csvData);
+      } else if (uploadData.uploadMethod === 'csv') {
+        let csvDataToProcess = uploadData.csvData;
+        
+        // For direct points format, convert the entries to CSV format
+        if (uploadData.format === 'Points' && directPointsEntries.length > 0) {
+          csvDataToProcess = convertDirectPointsToCSV();
+        }
+        
+        if (csvDataToProcess) {
+          // Use flexible parsing for SUPR and League events, standard parsing for others
+          if (uploadData.type === 'SUPR') {
+            players = parseSuprCSV(csvDataToProcess);
+          } else if (uploadData.type === 'League') {
+            players = parseLeagueCSV(csvDataToProcess);
+          } else {
+            players = parseCSV(csvDataToProcess);
+          }
         } else {
-          players = parseCSV(uploadData.csvData);
+          showNotification('Please provide data via file upload, CSV text, or add players for direct points', 'error');
+          setIsLoading(false);
+          return;
         }
       } else {
         showNotification('Please provide data via file upload or CSV text', 'error');
@@ -1413,7 +1496,7 @@ const GolfTournamentSystem = () => {
                     </div>
                   </div>
 
-                  {uploadData.uploadMethod === 'csv' && (
+                  {uploadData.uploadMethod === 'csv' && uploadData.format !== 'Points' && (
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">CSV Data</label>
                       <textarea
@@ -1423,11 +1506,112 @@ const GolfTournamentSystem = () => {
                         placeholder={
                           uploadData.format === 'Stableford' 
                             ? "Player Name,Club,Total,Course Handicap\nJohn Smith,Sylvan,42,8\nJane Doe,8th,38,5"
-                            : uploadData.format === 'Points'
-                            ? "Player Name,Gross Points,Net Points\nJohn Smith,100,95\nJane Doe,85,80"
                             : "Player Name,Club,Score,Course Handicap\nJohn Smith,Sylvan,-2,4\nJane Doe,8th,1,8"
                         }
                       />
+                    </div>
+                  )}
+
+                  {uploadData.uploadMethod === 'csv' && uploadData.format === 'Points' && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-4">Add Players for Direct Points</label>
+                      
+                      {/* Player Selection Form */}
+                      <div className="bg-slate-700/50 rounded-xl p-6 mb-6 border border-slate-600">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                          <div className="md:col-span-1">
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Player</label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={playerSearchQuery}
+                                onChange={(e) => setPlayerSearchQuery(e.target.value)}
+                                placeholder="Search for player..."
+                                className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
+                              />
+                              {playerSearchQuery && (
+                                <div className="absolute top-full left-0 right-0 bg-slate-800 border border-slate-700 rounded-xl mt-1 max-h-60 overflow-y-auto z-10">
+                                  {getFilteredPlayers().slice(0, 10).map(player => (
+                                    <button
+                                      key={player.id}
+                                      onClick={() => {
+                                        setSelectedPlayerForPoints(player);
+                                        setPlayerSearchQuery(player.display_name);
+                                      }}
+                                      className="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors border-b border-slate-700 last:border-b-0"
+                                    >
+                                      <div className="text-white font-medium">{player.display_name}</div>
+                                      <div className="text-slate-400 text-sm">{player.club} • {player.trackman_id}</div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gross Points</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={tempGrossPoints}
+                              onChange={(e) => setTempGrossPoints(parseInt(e.target.value) || 0)}
+                              className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
+                              placeholder="0"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Net Points</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={tempNetPoints}
+                              onChange={(e) => setTempNetPoints(parseInt(e.target.value) || 0)}
+                              className="w-full p-4 bg-slate-800 backdrop-blur-sm border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-slate-400"
+                              placeholder="0"
+                            />
+                          </div>
+                          
+                          <div>
+                            <button
+                              onClick={addPlayerToDirectPoints}
+                              disabled={!selectedPlayerForPoints || (tempGrossPoints === 0 && tempNetPoints === 0)}
+                              className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              <Plus size={20} />
+                              Add Player
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Added Players List */}
+                      {directPointsEntries.length > 0 && (
+                        <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600">
+                          <h4 className="text-lg font-semibold text-white mb-4">Added Players ({directPointsEntries.length})</h4>
+                          <div className="space-y-2">
+                            {directPointsEntries.map((entry) => (
+                              <div key={entry.player.id} className="flex items-center justify-between bg-slate-800/50 rounded-lg p-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="text-white font-medium">{entry.player.display_name}</div>
+                                  <div className="text-slate-400 text-sm">({entry.player.club})</div>
+                                  <div className="flex gap-4 text-sm">
+                                    <span className="text-emerald-400">Gross: {entry.grossPoints}</span>
+                                    <span className="text-blue-400">Net: {entry.netPoints}</span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => removePlayerFromDirectPoints(entry.player.id)}
+                                  className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-300"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1475,6 +1659,12 @@ const GolfTournamentSystem = () => {
                       setShowUpload(false);
                       setSelectedFile(null);
                       setUploadData({...uploadData, csvData: '', uploadMethod: 'csv'});
+                      // Clear direct points entries
+                      setDirectPointsEntries([]);
+                      setSelectedPlayerForPoints(null);
+                      setTempGrossPoints(0);
+                      setTempNetPoints(0);
+                      setPlayerSearchQuery('');
                     }}
                     className="flex-1 bg-slate-800 backdrop-blur-sm text-slate-300 py-4 rounded-xl hover:bg-slate-700 border border-slate-700 transition-all duration-300 font-semibold"
                   >
