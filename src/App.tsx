@@ -1070,6 +1070,7 @@ const GolfTournamentSystem = () => {
             grossPoints,
             netPoints,
             hasPoints,
+            playerKeys: Object.keys(player),
             playerObj: player
           });
           
