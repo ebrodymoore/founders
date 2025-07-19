@@ -1053,14 +1053,27 @@ const GolfTournamentSystem = () => {
     try {
       setIsLoading(true);
       
+      // Debug: Log the raw players data
+      console.log('🔍 Raw players data before processing:', players);
+      
       // Process players data for Supabase upload
       const processedPlayers = players.filter((player) => {
         // For Points format, check if player has gross or net points
         if (tournamentData.format === 'Points') {
           const grossPoints = player['Gross Points'] || player['gross points'] || player.grossPoints;
           const netPoints = player['Net Points'] || player['net points'] || player.netPoints;
-          return (grossPoints !== null && grossPoints !== undefined && grossPoints !== '') || 
-                 (netPoints !== null && netPoints !== undefined && netPoints !== '');
+          const hasPoints = (grossPoints !== null && grossPoints !== undefined && grossPoints !== '') || 
+                           (netPoints !== null && netPoints !== undefined && netPoints !== '');
+          
+          console.log('🎯 Points format filter check:', {
+            playerName: player['Player Name'],
+            grossPoints,
+            netPoints,
+            hasPoints,
+            playerObj: player
+          });
+          
+          return hasPoints;
         }
         
         // For other formats, check for scores
