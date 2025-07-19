@@ -999,8 +999,10 @@ const GolfTournamentSystem = () => {
         }
         
         if (csvDataToProcess) {
-          // Use flexible parsing for SUPR and League events, standard parsing for others
-          if (uploadData.type === 'SUPR') {
+          // For Points format, always use standard CSV parsing regardless of tournament type
+          if (uploadData.format === 'Points') {
+            players = parseCSV(csvDataToProcess);
+          } else if (uploadData.type === 'SUPR') {
             players = parseSuprCSV(csvDataToProcess);
           } else if (uploadData.type === 'League') {
             players = parseLeagueCSV(csvDataToProcess);
