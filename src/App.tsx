@@ -2422,9 +2422,13 @@ const GolfTournamentSystem = () => {
                           <th className="text-left p-4 font-semibold text-gray-200">Position</th>
                           <th className="text-left p-4 font-semibold text-gray-200">Player</th>
                           <th className="text-left p-4 font-semibold text-gray-200">Club</th>
-                          <th className="text-left p-4 font-semibold text-gray-200">Gross</th>
-                          <th className="text-left p-4 font-semibold text-gray-200">Net</th>
-                          <th className="text-left p-4 font-semibold text-gray-200">Handicap</th>
+                          {selectedTournamentData?.type !== 'SUPR' && (
+                            <>
+                              <th className="text-left p-4 font-semibold text-gray-200">Gross</th>
+                              <th className="text-left p-4 font-semibold text-gray-200">Net</th>
+                              <th className="text-left p-4 font-semibold text-gray-200">Handicap</th>
+                            </>
+                          )}
                           <th className="text-left p-4 font-semibold text-gray-200">Points</th>
                         </tr>
                       </thead>
@@ -2473,11 +2477,15 @@ const GolfTournamentSystem = () => {
                                 {result.player?.club}
                               </span>
                             </td>
-                            <td className="p-4 text-white font-medium text-lg">{result.gross_score}</td>
-                            <td className="p-4 text-emerald-400 font-medium text-lg">
-                              {result.net_score}
-                            </td>
-                            <td className="p-4 text-slate-300">{result.handicap}</td>
+                            {selectedTournamentData?.type !== 'SUPR' && (
+                              <>
+                                <td className="p-4 text-white font-medium text-lg">{result.gross_score}</td>
+                                <td className="p-4 text-emerald-400 font-medium text-lg">
+                                  {result.net_score}
+                                </td>
+                                <td className="p-4 text-slate-300">{result.handicap}</td>
+                              </>
+                            )}
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-yellow-400 font-bold text-lg">
