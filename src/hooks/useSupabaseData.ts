@@ -151,23 +151,34 @@ export const useSupabaseData = () => {
       for (const playerData of playersData) {
         const playerName = playerData['Player Name'] || playerData['Name'] || playerData.name || playerData['Player'] || 'Unknown'
         
-        // Get or create player - first try trackman_id, then display name matching
+        // Get or create player - Player Name field contains trackman_id
+        console.log(`🔍 Looking for player with trackman_id: "${playerName}"`);
         let player = await playerService.getByTrackmanId(playerName)
-        if (!player) {
-          // Try exact display name match
+        if (player) {
+          console.log(`✅ Found existing player by trackman_id:`, player);
+        } else {
+          console.log(`❌ No player found with trackman_id: "${playerName}"`);
+          // Try exact display name match as fallback
           player = await playerService.getByDisplayName(playerName)
-          if (!player) {
+          if (player) {
+            console.log(`✅ Found existing player by display_name:`, player);
+          } else {
+            console.log(`❌ No player found with display_name: "${playerName}"`);
             // Try fuzzy search as fallback
             const searchResults = await playerService.searchByName(playerName)
             if (searchResults.length === 1) {
               // If only one match found, use it
               player = searchResults[0]
+              console.log(`✅ Found player via fuzzy search:`, player);
             } else if (searchResults.length > 1) {
               // Multiple matches found - use exact match or first result
               player = searchResults.find(p => p.display_name.toLowerCase() === playerName.toLowerCase()) || searchResults[0]
+              console.log(`✅ Found player via multiple fuzzy matches:`, player);
             } else {
               // No matches found - create new player with name as both trackman_id and display_name
+              console.warn(`🚨 Creating new player for trackman_id: "${playerName}"`);
               player = await playerService.create(playerName, playerName, 'Sylvan')
+              console.log(`✅ Created new player:`, player);
             }
           }
         }
