@@ -1995,18 +1995,18 @@ const GolfTournamentSystem = () => {
                       <div key={index} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-slate-700 transition-all duration-300">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h5 className="font-bold text-white text-lg">{event.tournamentName}</h5>
+                            <h5 className="font-bold text-white text-lg">{event.tournament?.name || event.tournamentName || 'Unknown Tournament'}</h5>
                             <div className="flex items-center gap-3 mt-1">
-                              <p className="text-slate-300 text-sm">{event.tournamentDate}</p>
-                              {event.tournamentType && (
+                              <p className="text-slate-300 text-sm">{event.tournament?.date || event.tournamentDate}</p>
+                              {(event.tournament?.type || event.tournamentType) && (
                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                  event.tournamentType === 'Major' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
-                                  event.tournamentType === 'Tour Event' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
-                                  event.tournamentType === 'SUPR' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
-                                  event.tournamentType === 'League Night' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' :
+                                  (event.tournament?.type || event.tournamentType) === 'Major' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
+                                  (event.tournament?.type || event.tournamentType) === 'Tour Event' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
+                                  (event.tournament?.type || event.tournamentType) === 'SUPR' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                                  (event.tournament?.type || event.tournamentType) === 'League Night' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' :
                                   'bg-gradient-to-r from-gray-500 to-gray-700 text-white'
                                 }`}>
-                                  {event.tournamentType}
+                                  {event.tournament?.type || event.tournamentType}
                                 </span>
                               )}
                             </div>
