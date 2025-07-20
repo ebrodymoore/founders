@@ -151,20 +151,24 @@ export const useSupabaseData = () => {
       for (const playerData of playersData) {
         const playerName = playerData['Player Name'] || playerData['Name'] || playerData.name || playerData['Player'] || 'Unknown'
         
-        // Get or create player - now using display name matching
-        let player = await playerService.getByDisplayName(playerName)
+        // Get or create player - first try trackman_id, then display name matching
+        let player = await playerService.getByTrackmanId(playerName)
         if (!player) {
-          // Try fuzzy search as fallback
-          const searchResults = await playerService.searchByName(playerName)
-          if (searchResults.length === 1) {
-            // If only one match found, use it
-            player = searchResults[0]
-          } else if (searchResults.length > 1) {
-            // Multiple matches found - use exact match or first result
-            player = searchResults.find(p => p.display_name.toLowerCase() === playerName.toLowerCase()) || searchResults[0]
-          } else {
-            // No matches found - create new player with name as both trackman_id and display_name
-            player = await playerService.create(playerName, playerName, 'Sylvan')
+          // Try exact display name match
+          player = await playerService.getByDisplayName(playerName)
+          if (!player) {
+            // Try fuzzy search as fallback
+            const searchResults = await playerService.searchByName(playerName)
+            if (searchResults.length === 1) {
+              // If only one match found, use it
+              player = searchResults[0]
+            } else if (searchResults.length > 1) {
+              // Multiple matches found - use exact match or first result
+              player = searchResults.find(p => p.display_name.toLowerCase() === playerName.toLowerCase()) || searchResults[0]
+            } else {
+              // No matches found - create new player with name as both trackman_id and display_name
+              player = await playerService.create(playerName, playerName, 'Sylvan')
+            }
           }
         }
         
