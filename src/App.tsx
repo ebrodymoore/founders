@@ -2489,11 +2489,16 @@ const GolfTournamentSystem = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {getFilteredLeaderboard().map((player: any, index) => (
+                    {getFilteredLeaderboard().map((player: any, index) => {
+                      const highlightThreshold = selectedClub === 'all' ? 2 : 3; // Top 3 for all clubs, top 4 for specific clubs
+                      const isHighlighted = index <= highlightThreshold;
+                      const isBorderRow = index === highlightThreshold;
+                      
+                      return (
                       <tr key={player.name} className={`border-b border-white/10 hover:bg-slate-700 transition-all duration-300 group animate-in fade-in-0 duration-700 ${
-                        index <= 3 ? 'bg-gradient-to-r from-emerald-500/10 to-transparent border-b-emerald-500/30' : ''
+                        isHighlighted ? 'bg-gradient-to-r from-emerald-500/10 to-transparent border-b-emerald-500/30' : ''
                       } ${
-                        index === 3 ? 'border-b-4 border-b-emerald-500/50' : ''
+                        isBorderRow ? 'border-b-4 border-b-emerald-500/50' : ''
                       }`} style={{animationDelay: `${index * 100}ms`}}>
                         <td className="p-4">
                           <div className="flex items-center gap-3">
@@ -2502,7 +2507,7 @@ const GolfTournamentSystem = () => {
                             </div>
                             {getRankIcon()}
                             <div className={`w-3 h-3 rounded-full ${
-                              index <= 3 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50' :
+                              isHighlighted ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50' :
                               'bg-gradient-to-r from-blue-400 to-blue-600'
                             }`}></div>
                             <button
@@ -2544,7 +2549,8 @@ const GolfTournamentSystem = () => {
                           </span>
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
