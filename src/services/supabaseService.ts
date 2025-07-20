@@ -484,17 +484,53 @@ export const recalculationService = {
         }
       };
 
-      // Recalculate gross positions and points
-      const grossSorted = [...results].sort((a, b) => 
-        tournament.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
-      );
-      assignPositionsWithTies(grossSorted, 'gross_score', 'gross_position', 'gross_points');
+      // Handle Points format tournaments differently
+      if (tournament.format === 'Points') {
+        // For Points format, sort by points (higher points = better position) and only assign positions
+        const grossSorted = [...results].sort((a, b) => (b.gross_points || 0) - (a.gross_points || 0));
+        const netSorted = [...results].sort((a, b) => (b.net_points || 0) - (a.net_points || 0));
+        
+        // Assign positions but preserve direct points
+        const assignPositionsOnly = (sortedResults: any[], pointsField: string, positionField: string) => {
+          let currentPosition = 1;
+          let i = 0;
+          
+          while (i < sortedResults.length) {
+            const currentPoints = sortedResults[i][pointsField] || 0;
+            
+            // Find all players with the same points
+            let tiedPlayers = 1;
+            while (i + tiedPlayers < sortedResults.length && 
+                   Math.abs((sortedResults[i + tiedPlayers][pointsField] || 0) - currentPoints) < 0.001) {
+              tiedPlayers++;
+            }
+            
+            // Assign position but keep original points
+            for (let j = 0; j < tiedPlayers; j++) {
+              sortedResults[i + j][positionField] = currentPosition;
+              sortedResults[i + j].tied_players = tiedPlayers;
+              // Don't overwrite the points - they're already set as direct points
+            }
+            
+            currentPosition += tiedPlayers;
+            i += tiedPlayers;
+          }
+        };
+        
+        assignPositionsOnly(grossSorted, 'gross_points', 'gross_position');
+        assignPositionsOnly(netSorted, 'net_points', 'net_position');
+      } else {
+        // Regular tournament recalculation
+        const grossSorted = [...results].sort((a, b) => 
+          tournament.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
+        );
+        assignPositionsWithTies(grossSorted, 'gross_score', 'gross_position', 'gross_points');
 
-      // Recalculate net positions and points
-      const netSorted = [...results].sort((a, b) => 
-        tournament.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
-      );
-      assignPositionsWithTies(netSorted, 'net_score', 'net_position', 'net_points');
+        const netSorted = [...results].sort((a, b) => 
+          tournament.format === 'Stableford' ? b.net_score - a.net_score : a.net_score - b.net_score
+        );
+        assignPositionsWithTies(netSorted, 'net_score', 'net_position', 'net_points');
+      }
 
       // Update all results in the database
       const updates = results.map(result => ({
