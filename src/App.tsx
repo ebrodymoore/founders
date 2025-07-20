@@ -2781,37 +2781,64 @@ const GolfTournamentSystem = () => {
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 {editingTournamentResults && selectedTournamentData?.format === 'Points' ? (
-                                  <div className="flex gap-1">
-                                    <input
-                                      type="number"
-                                      step="0.01"
-                                      placeholder="Gross"
-                                      value={editValues[`grossPoints_${result.id}`] ?? (result.gross_points || 0)}
-                                      onChange={(e) => setEditValues({
-                                        ...editValues, 
-                                        [`grossPoints_${result.id}`]: parseFloat(e.target.value) || 0
-                                      })}
-                                      className="w-12 p-1 bg-slate-700 border border-slate-600 rounded text-white text-xs text-center"
-                                    />
-                                    <input
-                                      type="number"
-                                      step="0.01"
-                                      placeholder="Net"
-                                      value={editValues[`netPoints_${result.id}`] ?? (result.net_points || 0)}
-                                      onChange={(e) => setEditValues({
-                                        ...editValues, 
-                                        [`netPoints_${result.id}`]: parseFloat(e.target.value) || 0
-                                      })}
-                                      className="w-12 p-1 bg-slate-700 border border-slate-600 rounded text-white text-xs text-center"
-                                    />
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex gap-2">
+                                      <div className="text-center">
+                                        <div className="text-slate-400 text-xs mb-1">Gross Pts</div>
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          value={editValues[`grossPoints_${result.id}`] ?? (result.gross_points || 0)}
+                                          onChange={(e) => setEditValues({
+                                            ...editValues, 
+                                            [`grossPoints_${result.id}`]: parseFloat(e.target.value) || 0
+                                          })}
+                                          className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-xs text-center"
+                                        />
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-slate-400 text-xs mb-1">Net Pts</div>
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          value={editValues[`netPoints_${result.id}`] ?? (result.net_points || 0)}
+                                          onChange={(e) => setEditValues({
+                                            ...editValues, 
+                                            [`netPoints_${result.id}`]: parseFloat(e.target.value) || 0
+                                          })}
+                                          className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-xs text-center"
+                                        />
+                                      </div>
+                                    </div>
                                   </div>
                                 ) : (
-                                  <>
-                                    <span className="text-yellow-400 font-bold text-lg">
-                                      {typeof points === 'number' ? points.toFixed(2) : points}
-                                    </span>
-                                    <span className="text-xs text-yellow-300">pts</span>
-                                  </>
+                                  <div>
+                                    {selectedTournamentData?.format === 'Points' ? (
+                                      <div className="flex flex-col gap-1">
+                                        <div className="flex gap-3 text-sm">
+                                          <span className="text-white">
+                                            <span className="text-slate-400">G:</span> {(result.gross_points || 0).toFixed(2)}
+                                          </span>
+                                          <span className="text-emerald-400">
+                                            <span className="text-slate-400">N:</span> {(result.net_points || 0).toFixed(2)}
+                                          </span>
+                                        </div>
+                                        <div className="text-center">
+                                          <span className="text-yellow-400 font-bold text-lg">
+                                            {typeof points === 'number' ? points.toFixed(2) : points}
+                                          </span>
+                                          <span className="text-xs text-yellow-300 ml-1">pts</span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <span className="text-yellow-400 font-bold text-lg">
+                                          {typeof points === 'number' ? points.toFixed(2) : points}
+                                        </span>
+                                        <span className="text-xs text-yellow-300">pts</span>
+                                      </>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                             </td>
