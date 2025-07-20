@@ -90,6 +90,9 @@ const GolfTournamentSystem = () => {
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{gross?: number, net?: number, grossPoints?: number, netPoints?: number}>({});
   
+  // Edit mode state for tournament results
+  const [editingTournamentResults, setEditingTournamentResults] = useState(false);
+  
   // Use Supabase notification system
   const notification = supabaseNotification;
 
@@ -450,6 +453,77 @@ const GolfTournamentSystem = () => {
     } catch (error) {
       console.error('Error updating tournament results:', error);
       showNotification('Failed to update results', 'error');
+    }
+  };
+
+  // Save all tournament result changes
+  const saveTournamentChanges = async () => {
+    if (!selectedTournament) return;
+
+    try {
+      const updates = [];
+      
+      // Collect all changes from editValues
+      for (const [key, value] of Object.entries(editValues)) {
+        const [field, resultId] = key.split('_');
+        
+        if (field === 'gross') {
+          updates.push({
+            id: resultId,
+            gross_score: value
+          });
+        } else if (field === 'net') {
+          updates.push({
+            id: resultId,
+            net_score: value
+          });
+        } else if (field === 'grossPoints') {
+          updates.push({
+            id: resultId,
+            gross_points: value
+          });
+        } else if (field === 'netPoints') {
+          updates.push({
+            id: resultId,
+            net_points: value
+          });
+        }
+      }
+
+      // Group updates by result ID
+      const groupedUpdates = updates.reduce((acc, update) => {
+        if (!acc[update.id]) {
+          acc[update.id] = { id: update.id };
+        }
+        Object.assign(acc[update.id], update);
+        return acc;
+      }, {} as Record<string, any>);
+
+      // Update each result in the database
+      for (const update of Object.values(groupedUpdates)) {
+        const { id, ...updateData } = update;
+        const { error } = await supabase
+          .from('tournament_results')
+          .update(updateData)
+          .eq('id', id);
+
+        if (error) throw error;
+      }
+
+      // Trigger recalculation
+      await recalculationService.recalculateTournament(selectedTournament);
+
+      // Refresh tournament results and leaderboard
+      const updatedResults = await getTournamentResults(selectedTournament);
+      setTournamentResults(updatedResults);
+      await loadLeaderboard();
+
+      showNotification('Tournament results updated successfully', 'success');
+      setEditingTournamentResults(false);
+      setEditValues({});
+    } catch (error) {
+      console.error('Error saving tournament changes:', error);
+      showNotification('Failed to save changes', 'error');
     }
   };
 
@@ -2551,17 +2625,31 @@ const GolfTournamentSystem = () => {
                           })()} 
                         </div>
                         {isAdmin && (
-                          <button
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to delete "${selectedTournamentData.name}"? This will permanently delete the tournament and all its results.`)) {
-                                deleteTournament(selectedTournamentData.id);
-                                setSelectedTournament('');
-                              }
-                            }}
-                            className="mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium shadow-lg"
-                          >
-                            Delete Tournament
-                          </button>
+                          <div className="flex gap-3 mt-3">
+                            <button
+                              onClick={() => setEditingTournamentResults(!editingTournamentResults)}
+                              className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium shadow-lg flex items-center gap-2 ${
+                                editingTournamentResults 
+                                  ? 'bg-gray-500 hover:bg-gray-600 text-white' 
+                                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+                              }`}
+                            >
+                              <Edit3 size={16} />
+                              {editingTournamentResults ? 'Cancel Edit' : 'Edit Results'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to delete "${selectedTournamentData.name}"? This will permanently delete the tournament and all its results.`)) {
+                                  deleteTournament(selectedTournamentData.id);
+                                  setSelectedTournament('');
+                                }
+                              }}
+                              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium shadow-lg flex items-center gap-2"
+                            >
+                              <Trash2 size={16} />
+                              Delete Tournament
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -2657,19 +2745,74 @@ const GolfTournamentSystem = () => {
                             </td>
                             {selectedTournamentData?.type !== 'SUPR' && (
                               <>
-                                <td className="p-4 text-white font-medium text-lg">{result.gross_score}</td>
+                                <td className="p-4 text-white font-medium text-lg">
+                                  {editingTournamentResults ? (
+                                    <input
+                                      type="number"
+                                      value={editValues[`gross_${result.id}`] ?? result.gross_score}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues, 
+                                        [`gross_${result.id}`]: parseInt(e.target.value) || 0
+                                      })}
+                                      className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-sm text-center"
+                                    />
+                                  ) : (
+                                    result.gross_score
+                                  )}
+                                </td>
                                 <td className="p-4 text-emerald-400 font-medium text-lg">
-                                  {result.net_score}
+                                  {editingTournamentResults ? (
+                                    <input
+                                      type="number"
+                                      value={editValues[`net_${result.id}`] ?? result.net_score}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues, 
+                                        [`net_${result.id}`]: parseInt(e.target.value) || 0
+                                      })}
+                                      className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-sm text-center"
+                                    />
+                                  ) : (
+                                    result.net_score
+                                  )}
                                 </td>
                                 <td className="p-4 text-slate-300">{result.handicap}</td>
                               </>
                             )}
                             <td className="p-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-yellow-400 font-bold text-lg">
-                                  {typeof points === 'number' ? points.toFixed(2) : points}
-                                </span>
-                                <span className="text-xs text-yellow-300">pts</span>
+                                {editingTournamentResults && selectedTournamentData?.format === 'Points' ? (
+                                  <div className="flex gap-1">
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="Gross"
+                                      value={editValues[`grossPoints_${result.id}`] ?? result.gross_points || 0}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues, 
+                                        [`grossPoints_${result.id}`]: parseFloat(e.target.value) || 0
+                                      })}
+                                      className="w-12 p-1 bg-slate-700 border border-slate-600 rounded text-white text-xs text-center"
+                                    />
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="Net"
+                                      value={editValues[`netPoints_${result.id}`] ?? result.net_points || 0}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues, 
+                                        [`netPoints_${result.id}`]: parseFloat(e.target.value) || 0
+                                      })}
+                                      className="w-12 p-1 bg-slate-700 border border-slate-600 rounded text-white text-xs text-center"
+                                    />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span className="text-yellow-400 font-bold text-lg">
+                                      {typeof points === 'number' ? points.toFixed(2) : points}
+                                    </span>
+                                    <span className="text-xs text-yellow-300">pts</span>
+                                  </>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -2678,6 +2821,19 @@ const GolfTournamentSystem = () => {
                       </tbody>
                     </table>
                   </div>
+                  
+                  {/* Save Changes Button */}
+                  {editingTournamentResults && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => saveTournamentChanges()}
+                        className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 font-medium shadow-lg flex items-center gap-2 mx-auto"
+                      >
+                        <Save size={20} />
+                        Save All Changes
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
