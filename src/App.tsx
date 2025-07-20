@@ -1989,7 +1989,7 @@ const GolfTournamentSystem = () => {
                 </div>
 
                 <div className="mb-6">
-                  <h4 className="text-xl font-bold text-white mb-4">Tournament Results</h4>
+                  <h4 className="text-xl font-bold text-white mb-4">Tournament Results ({leaderboardType === 'net' ? 'Net' : 'Gross'})</h4>
                   <div className="grid gap-4">
                     {selectedPlayer.allEvents.map((event: any, index: number) => (
                       <div key={index} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-slate-700 transition-all duration-300">
@@ -2024,11 +2024,11 @@ const GolfTournamentSystem = () => {
                               </div>
                             </div>
                             <div>
-                              <div className="text-slate-400 text-xs">Gross</div>
+                              <div className="text-slate-400 text-xs">Score 1</div>
                               <div className="text-white font-medium text-lg">{event.gross}</div>
                             </div>
                             <div>
-                              <div className="text-slate-400 text-xs">Net</div>
+                              <div className="text-slate-400 text-xs">Score 2</div>
                               <div className="text-emerald-400 font-medium text-lg">{event.net}</div>
                             </div>
                             <div>
