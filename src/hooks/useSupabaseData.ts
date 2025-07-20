@@ -174,8 +174,8 @@ export const useSupabaseData = () => {
         const handicap = playerData.handicap ?? 0;
         
         // Check for direct points (for Points format tournaments)
-        const grossPoints = playerData.grossPoints ?? playerData.gross_points ?? 0;
-        const netPoints = playerData.netPoints ?? playerData.net_points ?? 0;
+        const grossPoints = playerData.grossPoints ?? playerData['Gross Points'] ?? playerData.gross_points ?? 0;
+        const netPoints = playerData.netPoints ?? playerData['Net Points'] ?? playerData.net_points ?? 0;
         const directPoints = playerData.directPoints || (grossPoints > 0 || netPoints > 0);
         
         console.log('🔍 Player data validation:', {
@@ -189,7 +189,8 @@ export const useSupabaseData = () => {
           grossPoints,
           netPoints,
           directPoints,
-          format: tournamentData.format
+          format: tournamentData.format,
+          rawPlayerData: playerData
         });
         
         // For Points format, allow missing scores if points are provided directly
@@ -198,7 +199,7 @@ export const useSupabaseData = () => {
           throw new Error(`Invalid gross score for player ${playerName}: ${grossScore}`);
         }
         
-        results.push({
+        const resultObject = {
           player_id: player.id,
           gross_position: 999, // Will be calculated after sorting
           net_position: 999,   // Will be calculated after sorting
@@ -209,7 +210,17 @@ export const useSupabaseData = () => {
           net_points: tournamentData.format === 'Points' && directPoints ? netPoints : 0,     // Use direct points for Points format
           tied_players: 1, // Will be calculated in tie handling logic
           directPoints: directPoints // Flag to indicate direct points were provided
-        })
+        };
+        
+        console.log('📝 Created result object for', playerName, ':', {
+          gross_points: resultObject.gross_points,
+          net_points: resultObject.net_points,
+          directPoints: resultObject.directPoints,
+          originalGrossPoints: grossPoints,
+          originalNetPoints: netPoints
+        });
+        
+        results.push(resultObject)
       }
       
       // Helper function to assign positions and handle ties
@@ -228,6 +239,12 @@ export const useSupabaseData = () => {
           
           // For Points format with direct points, skip points calculation but still assign positions
           if (tournamentData.format === 'Points' && sortedResults[i].directPoints) {
+            console.log('🎯 Preserving direct points for players:', sortedResults.slice(i, i + tiedPlayers).map(r => ({
+              player: r.player_id,
+              pointsField,
+              currentValue: r[pointsField],
+              directPoints: r.directPoints
+            })));
             // Assign position but keep direct points unchanged
             for (let j = 0; j < tiedPlayers; j++) {
               sortedResults[i + j][positionField] = currentPosition;
@@ -235,6 +252,11 @@ export const useSupabaseData = () => {
               sortedResults[i + j].tied_players = tiedPlayers;
             }
           } else {
+            console.log('🔢 Calculating points for players:', sortedResults.slice(i, i + tiedPlayers).map(r => ({
+              player: r.player_id,
+              position: currentPosition,
+              tournamentType: tournamentData.type
+            })));
             // Calculate total points for tied positions (traditional scoring)
             let totalPoints = 0;
             for (let pos = currentPosition; pos < currentPosition + tiedPlayers; pos++) {
@@ -257,6 +279,13 @@ export const useSupabaseData = () => {
       };
       
       // Sort by gross scores/points and assign gross positions/points
+      console.log('📊 BEFORE GROSS SORTING - Direct points values:', results.filter(r => r.directPoints).map(r => ({
+        player: r.player_id,
+        gross_points: r.gross_points,
+        net_points: r.net_points,
+        directPoints: r.directPoints
+      })));
+      
       let grossSorted;
       let grossSortField;
       if (tournamentData.format === 'Points') {
@@ -270,9 +299,32 @@ export const useSupabaseData = () => {
         );
         grossSortField = 'gross_score';
       }
+      
+      console.log('📊 AFTER GROSS SORTING - Direct points values:', grossSorted.filter(r => r.directPoints).map(r => ({
+        player: r.player_id,
+        gross_points: r.gross_points,
+        net_points: r.net_points,
+        directPoints: r.directPoints
+      })));
+      
       assignPositionsWithTies(grossSorted, grossSortField, 'gross_position', 'gross_points');
       
+      console.log('📊 AFTER GROSS POSITION ASSIGNMENT - Direct points values:', grossSorted.filter(r => r.directPoints).map(r => ({
+        player: r.player_id,
+        gross_points: r.gross_points,
+        net_points: r.net_points,
+        gross_position: r.gross_position,
+        directPoints: r.directPoints
+      })));
+      
       // Sort by net scores/points and assign net positions/points
+      console.log('📊 BEFORE NET SORTING - Direct points values:', results.filter(r => r.directPoints).map(r => ({
+        player: r.player_id,
+        gross_points: r.gross_points,
+        net_points: r.net_points,
+        directPoints: r.directPoints
+      })));
+      
       let netSorted;
       let netSortField;
       if (tournamentData.format === 'Points') {
@@ -286,7 +338,23 @@ export const useSupabaseData = () => {
         );
         netSortField = 'net_score';
       }
+      
+      console.log('📊 AFTER NET SORTING - Direct points values:', netSorted.filter(r => r.directPoints).map(r => ({
+        player: r.player_id,
+        gross_points: r.gross_points,
+        net_points: r.net_points,
+        directPoints: r.directPoints
+      })));
+      
       assignPositionsWithTies(netSorted, netSortField, 'net_position', 'net_points');
+      
+      console.log('📊 AFTER NET POSITION ASSIGNMENT - Direct points values:', netSorted.filter(r => r.directPoints).map(r => ({
+        player: r.player_id,
+        gross_points: r.gross_points,
+        net_points: r.net_points,
+        net_position: r.net_position,
+        directPoints: r.directPoints
+      })));
       
       // Only create tournament after validation succeeds
       console.log('📝 Creating tournament in database...')
