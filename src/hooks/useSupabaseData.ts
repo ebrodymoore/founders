@@ -237,8 +237,8 @@ export const useSupabaseData = () => {
             tiedPlayers++;
           }
           
-          // For Points format with direct points, skip points calculation but still assign positions
-          if (tournamentData.format === 'Points' && sortedResults[i].directPoints) {
+          // For Points format (direct points), NEVER calculate points - only assign positions
+          if (tournamentData.format === 'Points') {
             console.log('🎯 Preserving direct points for players:', sortedResults.slice(i, i + tiedPlayers).map(r => ({
               player: r.player_id,
               pointsField,

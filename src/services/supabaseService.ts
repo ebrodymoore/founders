@@ -499,7 +499,7 @@ export const recalculationService = {
         const grossSorted = [...results].sort((a, b) => (b.gross_points || 0) - (a.gross_points || 0));
         const netSorted = [...results].sort((a, b) => (b.net_points || 0) - (a.net_points || 0));
         
-        // Assign positions but preserve direct points
+        // For Points format, ONLY assign positions and NEVER modify the points values
         const assignPositionsOnly = (sortedResults: any[], pointsField: string, positionField: string) => {
           let currentPosition = 1;
           let i = 0;
