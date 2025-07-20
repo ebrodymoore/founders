@@ -2024,12 +2024,6 @@ const GolfTournamentSystem = () => {
                               </div>
                             </div>
                             <div>
-                              <div className="text-slate-400 text-xs">Score</div>
-                              <div className="text-white font-medium text-lg">
-                                {leaderboardType === 'net' ? event.net : event.gross}
-                              </div>
-                            </div>
-                            <div>
                               <div className="text-slate-400 text-xs">Points</div>
                               <div className="text-yellow-400 font-bold text-lg">{event.points.toFixed(1)}</div>
                             </div>
