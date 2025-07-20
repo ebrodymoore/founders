@@ -485,7 +485,16 @@ export const recalculationService = {
       };
 
       // Handle Points format tournaments differently
+      console.log('🔄 Recalculating tournament:', {
+        id: tournament.id,
+        name: tournament.name,
+        type: tournament.type,
+        format: tournament.format,
+        resultsCount: results.length
+      });
+      
       if (tournament.format === 'Points') {
+        console.log('📊 Processing as direct points tournament');
         // For Points format, sort by points (higher points = better position) and only assign positions
         const grossSorted = [...results].sort((a, b) => (b.gross_points || 0) - (a.gross_points || 0));
         const netSorted = [...results].sort((a, b) => (b.net_points || 0) - (a.net_points || 0));
@@ -517,9 +526,26 @@ export const recalculationService = {
           }
         };
         
+        console.log('🎯 Direct points before position assignment:', results.map(r => ({
+          id: r.id,
+          player: r.player?.display_name,
+          gross_points: r.gross_points,
+          net_points: r.net_points
+        })));
+        
         assignPositionsOnly(grossSorted, 'gross_points', 'gross_position');
         assignPositionsOnly(netSorted, 'net_points', 'net_position');
+        
+        console.log('🎯 Direct points after position assignment:', results.map(r => ({
+          id: r.id,
+          player: r.player?.display_name,
+          gross_points: r.gross_points,
+          net_points: r.net_points,
+          gross_position: r.gross_position,
+          net_position: r.net_position
+        })));
       } else {
+        console.log('📊 Processing as regular tournament (scores -> calculated points)');
         // Regular tournament recalculation
         const grossSorted = [...results].sort((a, b) => 
           tournament.format === 'Stableford' ? b.gross_score - a.gross_score : a.gross_score - b.gross_score
