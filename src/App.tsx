@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Upload, Trophy, Calendar, Users, TrendingUp, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Settings, Trash2, Plus, RefreshCw } from 'lucide-react';
+import { Upload, Trophy, Calendar, Users, TrendingUp, Star, Target, ChevronDown, X, Lock, FileSpreadsheet, FileText, Sparkles, Settings, Trash2, Plus, RefreshCw, Edit3, Save, XCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import { recalculationService } from './services/supabaseService';
+import { supabase } from './lib/supabase';
 
 
 
@@ -84,6 +85,11 @@ const GolfTournamentSystem = () => {
   const [tempGrossPoints, setTempGrossPoints] = useState<number | ''>('');
   const [tempNetPoints, setTempNetPoints] = useState<number>(0);
   const [playerSearchQuery, setPlayerSearchQuery] = useState<string>('');
+  
+  // Edit mode state for player details
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{gross?: number, net?: number, grossPoints?: number, netPoints?: number}>({});
+  
   // Use Supabase notification system
   const notification = supabaseNotification;
 
@@ -373,6 +379,78 @@ const GolfTournamentSystem = () => {
       player.display_name.toLowerCase().includes(playerSearchQuery.toLowerCase()) ||
       player.trackman_id.toLowerCase().includes(playerSearchQuery.toLowerCase())
     );
+  };
+
+  // Handle editing tournament results
+  const startEditingEvent = (event: any) => {
+    const eventId = `${event.player_id}_${event.tournament?.id || 'unknown'}`;
+    setEditingEventId(eventId);
+    
+    // Check if this is a direct points tournament
+    if (event.tournament?.format === 'Points') {
+      setEditValues({
+        grossPoints: event.gross_points || 0,
+        netPoints: event.net_points || 0
+      });
+    } else {
+      setEditValues({
+        gross: event.gross_score || 0,
+        net: event.net_score || 0
+      });
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingEventId(null);
+    setEditValues({});
+  };
+
+  const saveEventEdit = async (event: any) => {
+    if (!editingEventId) return;
+
+    try {
+      const tournamentId = event.tournament?.id;
+      const playerId = event.player_id;
+      
+      if (!tournamentId || !playerId) {
+        showNotification('Missing tournament or player ID', 'error');
+        return;
+      }
+
+      // Update the database
+      const { error } = await supabase
+        .from('tournament_results')
+        .update({
+          gross_score: editValues.gross ?? event.gross_score,
+          net_score: editValues.net ?? event.net_score,
+          gross_points: editValues.grossPoints ?? event.gross_points,
+          net_points: editValues.netPoints ?? event.net_points
+        })
+        .eq('player_id', playerId)
+        .eq('tournament_id', tournamentId);
+
+      if (error) throw error;
+
+      // Trigger recalculation using the recalculation service
+      await recalculationService.recalculateTournament(tournamentId);
+
+      // Refresh player data and leaderboard
+      await loadLeaderboard();
+      
+      // Update local player data
+      if (selectedPlayer) {
+        const updatedPlayer = supabaseLeaderboard.find(p => p.id === selectedPlayer.id);
+        if (updatedPlayer) {
+          setSelectedPlayer(updatedPlayer);
+        }
+      }
+
+      showNotification('Results updated successfully', 'success');
+      cancelEditing();
+    } catch (error) {
+      console.error('Error updating tournament results:', error);
+      showNotification('Failed to update results', 'error');
+    }
   };
 
   // Function to determine event status based on current date
@@ -1991,46 +2069,141 @@ const GolfTournamentSystem = () => {
                 <div className="mb-6">
                   <h4 className="text-xl font-bold text-white mb-4">Tournament Results ({leaderboardType === 'net' ? 'Net' : 'Gross'})</h4>
                   <div className="grid gap-4">
-                    {selectedPlayer.allEvents.map((event: any, index: number) => (
-                      <div key={index} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-slate-700 transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h5 className="font-bold text-white text-lg">{event.tournament?.name || event.tournamentName || 'Unknown Tournament'}</h5>
-                            <div className="flex items-center gap-3 mt-1">
-                              <p className="text-slate-300 text-sm">{event.tournament?.date || event.tournamentDate}</p>
-                              {(event.tournament?.type || event.tournamentType) && (
-                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                  (event.tournament?.type || event.tournamentType) === 'Major' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
-                                  (event.tournament?.type || event.tournamentType) === 'Tour Event' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
-                                  (event.tournament?.type || event.tournamentType) === 'SUPR' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
-                                  (event.tournament?.type || event.tournamentType) === 'League Night' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' :
-                                  'bg-gradient-to-r from-gray-500 to-gray-700 text-white'
+                    {selectedPlayer.allEvents.map((event: any, index: number) => {
+                      const eventId = `${event.player_id}_${event.tournament?.id || 'unknown'}`;
+                      const isEditing = editingEventId === eventId;
+                      const isDirectPoints = event.tournament?.format === 'Points';
+                      
+                      return (
+                        <div key={index} className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-slate-700 transition-all duration-300">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h5 className="font-bold text-white text-lg">{event.tournament?.name || event.tournamentName || 'Unknown Tournament'}</h5>
+                              <div className="flex items-center gap-3 mt-1">
+                                <p className="text-slate-300 text-sm">{event.tournament?.date || event.tournamentDate}</p>
+                                {(event.tournament?.type || event.tournamentType) && (
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                    (event.tournament?.type || event.tournamentType) === 'Major' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
+                                    (event.tournament?.type || event.tournamentType) === 'Tour Event' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
+                                    (event.tournament?.type || event.tournamentType) === 'SUPR' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                                    (event.tournament?.type || event.tournamentType) === 'League Night' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' :
+                                    'bg-gradient-to-r from-gray-500 to-gray-700 text-white'
+                                  }`}>
+                                    {event.tournament?.type || event.tournamentType}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Display/Edit Section */}
+                            <div className="flex items-center gap-6 text-right">
+                              <div>
+                                <div className="text-slate-400 text-xs">Position</div>
+                                <div className={`font-bold text-lg ${
+                                  event.position === 1 ? 'text-yellow-400' :
+                                  event.position <= 3 ? 'text-emerald-400' :
+                                  event.position <= 10 ? 'text-blue-400' :
+                                  'text-slate-300'
                                 }`}>
-                                  {event.tournament?.type || event.tournamentType}
-                                </span>
+                                  {event.position === Infinity ? '-' : event.position}
+                                </div>
+                              </div>
+                              
+                              {/* Show edit fields for scores (non-direct points) or points (direct points) */}
+                              {isEditing ? (
+                                <>
+                                  {isDirectPoints ? (
+                                    // Direct Points editing
+                                    <>
+                                      <div>
+                                        <div className="text-slate-400 text-xs">Gross Pts</div>
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          value={editValues.grossPoints || 0}
+                                          onChange={(e) => setEditValues({...editValues, grossPoints: parseFloat(e.target.value) || 0})}
+                                          className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-sm text-center"
+                                        />
+                                      </div>
+                                      <div>
+                                        <div className="text-slate-400 text-xs">Net Pts</div>
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          value={editValues.netPoints || 0}
+                                          onChange={(e) => setEditValues({...editValues, netPoints: parseFloat(e.target.value) || 0})}
+                                          className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-sm text-center"
+                                        />
+                                      </div>
+                                    </>
+                                  ) : (
+                                    // Regular tournament editing
+                                    <>
+                                      <div>
+                                        <div className="text-slate-400 text-xs">Gross</div>
+                                        <input
+                                          type="number"
+                                          value={editValues.gross || 0}
+                                          onChange={(e) => setEditValues({...editValues, gross: parseInt(e.target.value) || 0})}
+                                          className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-sm text-center"
+                                        />
+                                      </div>
+                                      <div>
+                                        <div className="text-slate-400 text-xs">Net</div>
+                                        <input
+                                          type="number"
+                                          value={editValues.net || 0}
+                                          onChange={(e) => setEditValues({...editValues, net: parseInt(e.target.value) || 0})}
+                                          className="w-16 p-1 bg-slate-700 border border-slate-600 rounded text-white text-sm text-center"
+                                        />
+                                      </div>
+                                    </>
+                                  )}
+                                  
+                                  {/* Save/Cancel buttons */}
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => saveEventEdit(event)}
+                                      className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                                      title="Save"
+                                    >
+                                      <Save size={16} />
+                                    </button>
+                                    <button
+                                      onClick={cancelEditing}
+                                      className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                                      title="Cancel"
+                                    >
+                                      <XCircle size={16} />
+                                    </button>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div>
+                                    <div className="text-slate-400 text-xs">Points</div>
+                                    <div className="text-yellow-400 font-bold text-lg">{event.points.toFixed(1)}</div>
+                                  </div>
+                                  
+                                  {/* Edit button (only show for admins) */}
+                                  {isAdmin && (
+                                    <div>
+                                      <button
+                                        onClick={() => startEditingEvent(event)}
+                                        className="p-1 text-slate-400 hover:text-white transition-colors"
+                                        title="Edit"
+                                      >
+                                        <Edit3 size={16} />
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-6 text-right">
-                            <div>
-                              <div className="text-slate-400 text-xs">Position</div>
-                              <div className={`font-bold text-lg ${
-                                event.position === 1 ? 'text-yellow-400' :
-                                event.position <= 3 ? 'text-emerald-400' :
-                                event.position <= 10 ? 'text-blue-400' :
-                                'text-slate-300'
-                              }`}>
-                                {event.position === Infinity ? '-' : event.position}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-slate-400 text-xs">Points</div>
-                              <div className="text-yellow-400 font-bold text-lg">{event.points.toFixed(1)}</div>
-                            </div>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
