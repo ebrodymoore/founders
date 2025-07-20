@@ -88,7 +88,7 @@ const GolfTournamentSystem = () => {
   
   // Edit mode state for player details
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{gross?: number, net?: number, grossPoints?: number, netPoints?: number}>({});
+  const [editValues, setEditValues] = useState<Record<string, number>>({});
   
   // Edit mode state for tournament results
   const [editingTournamentResults, setEditingTournamentResults] = useState(false);
@@ -2786,7 +2786,7 @@ const GolfTournamentSystem = () => {
                                       type="number"
                                       step="0.01"
                                       placeholder="Gross"
-                                      value={editValues[`grossPoints_${result.id}`] ?? result.gross_points || 0}
+                                      value={editValues[`grossPoints_${result.id}`] ?? (result.gross_points || 0)}
                                       onChange={(e) => setEditValues({
                                         ...editValues, 
                                         [`grossPoints_${result.id}`]: parseFloat(e.target.value) || 0
@@ -2797,7 +2797,7 @@ const GolfTournamentSystem = () => {
                                       type="number"
                                       step="0.01"
                                       placeholder="Net"
-                                      value={editValues[`netPoints_${result.id}`] ?? result.net_points || 0}
+                                      value={editValues[`netPoints_${result.id}`] ?? (result.net_points || 0)}
                                       onChange={(e) => setEditValues({
                                         ...editValues, 
                                         [`netPoints_${result.id}`]: parseFloat(e.target.value) || 0
