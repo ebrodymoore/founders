@@ -2416,7 +2416,12 @@ const GolfTournamentSystem = () => {
                     <TrendingUp className="text-emerald-400" size={32} />
                     Championship Leaderboard
                   </h2>
-                  <p className="text-slate-300">Top 4 from each category qualify for Founders Cup</p>
+                  <p className="text-slate-300">
+                    {selectedClub === 'all' 
+                      ? "Top 3 in overall gross and net qualify for season long playoff"
+                      : "Top 4 in gross and net from each clubhouse qualify for Founders Cup team"
+                    }
+                  </p>
                 </div>
                 
                 <div className="flex flex-wrap gap-4 items-center">
