@@ -272,9 +272,9 @@ const GolfTournamentSystem = () => {
       // Skip if playerName is 'Unknown' or empty
       if (!playerName || playerName === 'Unknown') return;
       
-      // Check if player already exists in Supabase by display name (case-insensitive)
+      // Check if player already exists in Supabase by trackman_id first, then by display name (case-insensitive)
       const existingPlayer = supabasePlayers.find(p => 
-        p.display_name.toLowerCase() === playerName.toLowerCase()
+        p.trackman_id === playerName || p.display_name.toLowerCase() === playerName.toLowerCase()
       );
       
       if (!existingPlayer) {
