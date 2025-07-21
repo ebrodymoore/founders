@@ -16,12 +16,14 @@ export const playerService = {
 
   // Get player by TrackmanID
   async getByTrackmanId(trackmanId: string): Promise<Player | null> {
+    console.log(`🔍 Database lookup for trackman_id: [${JSON.stringify(trackmanId)}]`);
     const { data, error } = await supabase
       .from('players')
       .select('*')
       .eq('trackman_id', trackmanId)
       .single()
     
+    console.log(`🔍 Database result:`, { data, error: error?.message });
     if (error && error.code !== 'PGRST116') throw error
     return data
   },

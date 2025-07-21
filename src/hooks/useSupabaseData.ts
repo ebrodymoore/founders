@@ -157,6 +157,7 @@ export const useSupabaseData = () => {
         
         // Get or create player - Player Name field contains trackman_id
         console.log(`🔍 Looking for player with trackman_id: "${playerName}"`);
+        console.log(`🔍 Exact string: [${JSON.stringify(playerName)}] Length: ${playerName.length}`);
         let player = await playerService.getByTrackmanId(playerName)
         if (player) {
           console.log(`✅ Found existing player by trackman_id:`, player);
