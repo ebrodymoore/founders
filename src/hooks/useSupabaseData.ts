@@ -141,6 +141,10 @@ export const useSupabaseData = () => {
   ) => {
     setIsLoading(true)
     console.log('🏆 Starting tournament upload:', { tournamentData, playersCount: playersData.length })
+    console.log('📋 PLAYER MATCHING DEBUG - First 3 players from upload:', playersData.slice(0, 3).map(p => ({
+      playerName: p['Player Name'] || p['Name'] || p.name || p['Player'] || 'Unknown',
+      rawData: p
+    })))
     
     let tournament: Tournament | null = null
     
